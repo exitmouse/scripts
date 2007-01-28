@@ -1,0 +1,3 @@
+#!/bin/sh
+
+athrun scripts gfind . -type d -print | xargs -i@ fs sa -dir @ -acl $@

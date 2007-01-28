@@ -1,0 +1,8 @@
+#!/bin/sh
+
+gnu=`/usr/bin/find --version 2>/dev/null | grep -i gnu`
+if [ "$gnu" != "" ]; then
+	/usr/bin/find "$@"
+else
+	athrun gnu gfind "$@"
+fi

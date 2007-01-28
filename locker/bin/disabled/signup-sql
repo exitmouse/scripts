@@ -1,0 +1,4 @@
+#!/bin/sh
+
+attach scripts 2>/dev/null
+. /mit/scripts/deploy/bin/sql-signup

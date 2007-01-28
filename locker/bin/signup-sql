@@ -1,0 +1,111 @@
+#!/bin/sh
+
+checkfailed() {
+  if [ -f "$lroot/web_scripts/$addrend/.failed" ]; then
+    rm -f $lroot/web_scripts/$addrend/.failed
+    exit 1
+  fi
+}
+
+sshrun() {
+  athrun scripts sshmic scripts.mit.edu /usr/local/bin/runas $lname /mit/scripts/$1 2>/dev/null
+}
+
+vsshrun() {
+  athrun scripts sshmic scripts.mit.edu /usr/local/bin/runas $lname /mit/scripts/$1
+}
+
+checksqlpass() {
+    errors=`sshrun 'sql/bin$scriptsdev/test-password'`
+    if [ "$errors" != "" ]; then
+        if [ "$1" -eq 1 ]; then
+          rm -f $lroot/.sql/my.cnf
+        fi
+        echo
+        echo ERROR:
+        printf "$2"
+        printf "$3"
+        exit
+    fi
+}
+
+echo 
+echo == Welcome to the sql.mit.edu signup process ==
+echo
+
+echo "For documentation, including a link to the Athena rules of use,"
+echo "see <http://sql.mit.edu>."
+echo
+echo Please report problems with this signup process to sql@mit.edu.
+echo
+echo Are you performing this signup for:
+echo 1. Your personal Athena account
+echo 2. A locker that you control \(a club, a course, etc\)
+echo If you do not understand this question, you should answer \'1\'.
+printf "Please enter either '1' or '2' (without quotes): "
+read whofor
+if [ "$whofor" -eq 1 ]; then
+    lname=$USER
+    lroot=$HOME 
+elif [ "$whofor" -eq 2 ]; then
+    echo
+    echo OK.  A MySQL account will be created for a locker of your choice that
+    echo you control.  Please enter the name of the selected locker below.
+    echo "(For the locker /mit/sipb, you would enter sipb)."
+    printf "Locker name: "
+    read lname
+    lroot="/mit/$lname" 
+else
+    echo
+    echo ERROR:
+    echo You must select either '1' or '2'.
+    exit 1
+fi
+
+# Users need to sign up for scripts.mit.edu so that they can
+# authenticate themselves to sql.mit.edu
+attach scripts 2>/dev/null
+. /mit/scripts/bin$scriptsdev/signup-web
+
+if [ "$requires_sql" = "" ]; then
+  requires_sql=1
+fi
+
+if [ ! -f "$lroot/.my.cnf" ]; then
+  mkdir $lroot/.sql 2>/dev/null
+  fs sa $lroot/.sql system:anyuser none
+  fs sa $lroot/.sql daemon.scripts write
+  ln -nfs $lroot/.sql/my.cnf $lroot/.my.cnf 2>/dev/null
+fi
+
+if [ "$requires_sql" -eq 1 ]; then
+  sqlinfo=`sshrun "sql/bin$scriptsdev/get-password"`
+  if [ "$sqlinfo" = "" ]; then
+      echo 
+      echo You already have a MySQL account but you do not have a .my.cnf file.
+      echo If you do not remember your MySQL account password, you can change it
+      echo at http://sql.mit.edu using MIT certificates. 
+      printf "Please type your MySQL password and press [enter]: "
+      stty -echo
+      read sqlpass
+      stty echo
+      echo
+      sqlhost="sql.mit.edu"
+      sqluser=$lname
+      . /mit/scripts/sql/bin$scriptsdev/save-password
+      checksqlpass 1 'The MySQL password that you typed appears to be incorrect.\n' ''
+      echo
+      echo OK.  Continuing with the install...
+  else
+      checksqlpass 0 'The MySQL login information in your .my.cnf file\n' 'appears to be incorrect.\n'
+  fi
+fi
+
+echo
+echo == Setup complete! ==
+echo Your MySQL login information has been written to the file
+echo "</mit/$lname/.sql/my.cnf>."
+echo You must use the sql.mit.edu web interface to add or drop databases.
+echo If you have trouble with your MySQL account, feel free to contact
+echo the sql.mit.edu team by e-mailing sql@mit.edu
+exit 0

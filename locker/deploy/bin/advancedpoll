@@ -1,0 +1,34 @@
+#!/usr/bin/perl
+use strict;
+use lib '/mit/scripts/deploy/bin';
+use onserver;
+
+setup();
+
+undef $/;
+open(FILE, "include/contemp.php");
+my $a = <FILE>;
+close(FILE);
+$a =~ s/localhost/$sqlhost/g;
+$a =~ s/dbuser/$sqluser/g;
+$a =~ s/dbpass/$sqlpass/g;
+$a =~ s/polldb/$sqldb/g;
+open(FILE, ">include/config.inc.php");
+print FILE $a;
+close(FILE);
+
+`curl http://$server/~$USER/$addrend/install.php\?action=step_2 2>/dev/null`;
+`curl http://$server/~$USER/$addrend/install.php\?action=step_3 2>/dev/null`;
+`curl http://$server/~$USER/$addrend/install.php\?action=step_4 2>/dev/null`;
+
+totmp("-d \"action=step_6&username=$admin_username&password=$admin_password\""); 
+`curl -K $tmp http://$server/~$USER/$addrend/install.php\?action=step_6 2>/dev/null`;
+
+`rm -r include/contemp.php`;
+
+print <<END;
+Your $sname Admin Panel is at
+http://$server/~$USER/$addrend/admin
+You can use this admin panel to create your first poll.
+END
+press_enter();

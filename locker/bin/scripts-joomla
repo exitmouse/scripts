@@ -1,0 +1,5 @@
+#!/bin/sh
+
+sname="Joomla"
+deploy="joomla"
+. /mit/scripts/deploy$scriptsdev/bin/onathena

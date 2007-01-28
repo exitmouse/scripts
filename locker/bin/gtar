@@ -1,0 +1,8 @@
+#!/bin/sh
+
+gnu=`/bin/tar --version 2>/dev/null | grep -i gnu`
+if [ "$gnu" != "" ]; then
+	/bin/tar $@
+else
+	athrun gnu gtar $@
+fi

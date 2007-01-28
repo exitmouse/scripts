@@ -1,0 +1,15 @@
+#!/bin/sh
+
+attach scripts 2>/dev/null
+. /mit/scripts/bin$scriptsdev/signup-minimal
+
+if [ ! -d "/mit/$lname/cron_scripts/" ]; then
+  mkdir 2>/dev/null /mit/$lname/cron_scripts
+  fs sa /mit/$lname/cron_scripts system:anyuser l
+  fs sa /mit/$lname/cron_scripts daemon.scripts write
+  DATE=`date`
+  sed '/SCRIPTS_USER/s//'"$lname"'/g' /mit/scripts/deploy/crontab | sed '/SCRIPTS_DATE/s//'"$DATE"'/g' > /mit/$lname/cron_scripts/crontab
+  success "the cron script service" "The directory /mit/$lname/cron_scripts has been created."
+else
+  success "the cron script service" "The directory /mit/$lname/cron_scripts already exists." 
+fi

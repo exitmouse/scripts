@@ -1,0 +1,8 @@
+#!/bin/sh
+
+sname="Gallery2"
+deploy="gallery2"
+prompt_username=1
+create_dir=1
+
+. /mit/scripts/deploy$scriptsdev/bin/onathena

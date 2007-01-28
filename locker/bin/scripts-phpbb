@@ -1,0 +1,5 @@
+#!/bin/sh
+
+sname="phpBB"
+deploy="phpbb"
+. /mit/scripts/deploy$scriptsdev/bin/onathena

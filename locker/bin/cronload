@@ -1,0 +1,10 @@
+#!/bin/sh
+
+echo "This program should print your new crontab below."
+echo "If it does not do so, something is wrong."
+echo "Feel free to contact scripts@mit.edu for assistance."
+echo
+
+cwd=`pwd`
+lname=`perl -e "\\\$temp = \"$cwd\"; \\\$temp =~ /\\\/([^\\\/]+)\\\/cron_scripts/; print \\\$1"`
+athrun scripts sshmic ${lname}@scripts.mit.edu "/usr/local/bin/cronload $1 $cwd" 2>/dev/null

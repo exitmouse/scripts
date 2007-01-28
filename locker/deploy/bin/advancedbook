@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+use strict;
+use lib '/mit/scripts/deploy/bin';
+use onserver;
+
+setup();
+
+undef $/;
+
+open(FILE, "admin/contemp.php");
+my $a = <FILE>;
+close(FILE);
+$a =~ s/localhost/$sqlhost/g;
+$a =~ s/dbuser/$sqluser/g;
+$a =~ s/dbpass/$sqlpass/g;
+$a =~ s/guestbookdb/$sqldb/g;
+$a =~ s/useremail/$human\@mit.edu/g;
+open(FILE, ">admin/config.inc.php");
+print FILE $a;
+close(FILE);
+
+open(FILE, "instemp.php");
+$a = <FILE>;
+close(FILE);
+$a =~ s/gbuser/$admin_username/g;
+$a =~ s/gbpass/$admin_password/g;
+open(FILE, ">install.php");
+print FILE $a;
+close(FILE);
+
+totmp("-d \"action=Create%20table&db=$sqldbcurl&host=$sqlhost&name=$sqluser&pass=$sqlpass\"");
+`curl -K $tmp http://$server/~$USER/$addrend/install.php 2>/dev/null`;

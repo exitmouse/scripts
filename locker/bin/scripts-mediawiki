@@ -1,0 +1,6 @@
+#!/bin/sh
+
+sname="MediaWiki"
+deploy="mediawiki"
+prompt_username=1
+. /mit/scripts/deploy$scriptsdev/bin/onathena
