@@ -1,8 +1,0 @@
-#!/bin/sh
-
-attach scripts 2>/dev/null
-. /mit/scripts/bin$scriptsdev/signup-minimal
-
-sed /SCRIPTS_USER/s//$lname/ /mit/scripts/bin/procmailrc > /mit/$lname/mail_scripts/procmailrc
-#  echo -e ":0\n*\n! $USER@mit.edu" >/mit/$lname/mail_scripts/procmailrc
-success "the mail script service" "The directory /mit/$lname/mail_scripts has been created."
