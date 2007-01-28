@@ -46,8 +46,8 @@ ENDFILE
 	close(HTACCESS);
 	chmod(0777, ".htaccess");
 
-	my $salt = substr($username, 0, 2);
-	$password = crypt($password, $salt);
+	my $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z') [rand 64, rand 64, rand 64, rand 64, rand 64, rand 64, rand 64, rand 64];
+	$password = crypt($password, '$1$'.$salt);
 
 	open(HTPASSWD, ">>.htpasswd");
 	print HTPASSWD "$username\:$password\n";

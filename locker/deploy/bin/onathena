@@ -8,11 +8,11 @@ checkfailed() {
 }
 
 sshrun() {
-  athrun scripts sshmic scripts.mit.edu /usr/local/bin/runas $lname /mit/scripts/$1 2>/dev/null
+  athrun scripts sshmic ${lname}@scripts.mit.edu /mit/scripts/$1 2>/dev/null
 }
 
 vsshrun() {
-  athrun scripts sshmic scripts.mit.edu /usr/local/bin/runas $lname /mit/scripts/$1
+  athrun scripts sshmic ${lname}@scripts.mit.edu /mit/scripts/$1
 }
 
 checksqlpass() {
