@@ -1,0 +1,6 @@
+#!/bin/sh
+
+status=`wget http://sql.mit.edu/~sql/main/do/batch/status?u=$USER -q -O-`
+
+echo $status
+exit $status

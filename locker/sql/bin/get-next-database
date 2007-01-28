@@ -1,0 +1,16 @@
+#!/usr/bin/php
+<?php
+
+list($h,$u,$p) = explode("\t",`/mit/scripts/sql/bin/get-password`);
+$newdb = str_replace($u.'+','',$argv[1]);
+$testdb = str_replace('.','',$u).'+'.$newdb;
+$dbs = explode("\n",file_get_contents("http://sql.mit.edu/~sql/tools/list_dbs.php?h=$h&u=$u&p=$p"));
+if (in_array($testdb,$dbs)) {
+	$i = 1;
+	while(in_array($testdb.$i,$dbs)) {
+		$i++;
+	}
+	echo $newdb.$i;
+} else echo $newdb;
+
+?>
