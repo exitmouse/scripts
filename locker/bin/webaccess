@@ -1,65 +1,226 @@
-#!/usr/bin/perl
-use strict;
+#!/bin/bash
 
-my ($op, $username) = @ARGV;
+# webaccess
+# Manage access control for scripts.mit.edu in .htaccess and .htpasswd files.
+# Anders Kaseorg <andersk@mit.edu>
 
-if(defined $op and $op eq "reset") {
-	system("rm -f .htaccess .htpasswd");
-    print "\nDone.  All access restrictions removed.\n\n";
-	exit(0);
+set -e
+
+on_exit=
+trap 'eval "$on_exit"' EXIT
+
+dir="$(pwd)"
+htaccess=$dir/.htaccess
+authuserfile=$dir/.htpasswd
+
+add_users=
+del_users=
+enable_auth=1
+def_authname=\"Private\"
+
+begin_section="### BEGIN webaccess directives"
+end_section="### END webaccess directives"
+
+usage () {
+    cat <<EOF >&2
+usage:
+  webaccess -a <user>   Allow access from <user> and set password.
+  webaccess -d <user>   Deny access from <user>.
+  webaccess -r          Reset default access control.
+EOF
+    exit 1
 }
 
-if(!defined $op or !defined $username or
-	($op ne "allow" and $op ne "remove")) {
-	print "Usage: webaccess [allow username] [remove username] [reset]\n";
-	exit(0);
+getpass () {
+    user=$1
+    (
+	echo -n "New password for $user: " >/dev/tty
+	trap 'stty echo; echo >/dev/tty' EXIT
+	stty -echo
+	perl -e 'chop($_ = <>); print crypt($_, "\$1\$" . join "", (".", "/", "0".."9", "A".."Z", "a".."z") [rand 64, rand 64, rand 64, rand 64, rand 64, rand 64, rand 64, rand 64])' </dev/tty
+    )
 }
 
-if($op eq "allow" or $op eq "remove") {
-	open(HTPASSWD, ".htpasswd");
-	open(TMP, ">.htpasswd_tmp");
-	while(my $line = <HTPASSWD>) {
-		print TMP "$line" unless($line =~ /$username\:/);
-	}
-	close(TMP);
-	close(HTPASSWD);
-	system("mv .htpasswd_tmp .htpasswd");
+if [ $# -eq 0 ]; then usage; fi
+
+while [ $# -gt 0 ]; do
+    arg="$1"; shift
+    case "$arg" in
+	-a*)
+	    user="${arg#-a}"
+	    if [ -z "$user" ]; then user=$1; shift; fi
+	    if [ -z "$user" ]; then usage; fi
+	    add_users=$add_users\ $user
+	    ;;
+	allow)
+	    user="$1"; shift
+	    if [ -z "$user" ]; then usage; fi
+	    add_users=$add_users\ $user
+	    ;;
+	-d*)
+	    user="${arg#-d}"
+	    if [ -z "$user" ]; then user=$1; shift; fi
+	    if [ -z "$user" ]; then usage; fi
+	    del_users=$del_users\ $user
+	    ;;
+	remove)
+	    user="$1"; shift
+	    if [ -z "$user" ]; then usage; fi
+	    del_users=$del_users\ $user
+	    ;;
+	-r|reset)
+	    enable_auth=0
+	    ;;
+	-n*)
+	    authname="${arg#-n}"
+	    if [ -z "$authname" ]; then authname=\"$1\"; shift; fi
+	    if [ -z "$authname" ]; then usage; fi
+	    ;;
+	*)
+	    usage
+	    ;;
+    esac
+done
+
+tmp_htaccess=$htaccess.webaccess-new
+trap 'rm -f "$tmp_htaccess"' EXIT
+exec 3>"$tmp_htaccess"
+
+config_written=0
+write_config () {
+    if [ $config_written -eq 1 ]; then return 0; fi
+    config_written=1
+    if [ $enable_auth -eq 1 ]; then
+	echo "$begin_section" >&3
+	echo "# See http://scripts.mit.edu/faq/23" >&3
+	echo "AuthUserFile $authuserfile" >&3
+	echo "AuthName ${authname:-$def_authname}" >&3
+	echo "AuthType Basic" >&3
+	echo "Require valid-user" >&3
+	echo "$end_section" >&3
+    fi
 }
 
-if($op eq "allow") {
-	my $password;
-	print "Enter new password for $username: ";
-	system("stty -echo");
-	chop($password = <STDIN>);
-	system("stty echo");
-	print "\n";
+if [ -e "$htaccess" ]; then
+    exec 4<"$htaccess"
+    
+    oldconfig_state=0
+    oldconfig_buffer=__END__
+    
+    while read -r line <&4; do
+	oldconfig_newstate=0
+	case "$line" in
+	    "AuthUserFile "*)     oldconfig_newstate=1 ;;
+	    "AuthName "*)         oldconfig_newstate=2; oldconfig_authname=${line#AuthName } ;;
+	    "AuthType Basic")     oldconfig_newstate=3 ;;
+	    "<Limit GET>")        oldconfig_newstate=4 ;;
+	    "require valid-user") oldconfig_newstate=5 ;;
+	    "</Limit>")           oldconfig_newstate=6 ;;
+	esac
+	
+	if [ $oldconfig_newstate -ne $(($oldconfig_state + 1)) ]; then
+	    if [ $oldconfig_state -ne 0 ]; then
+		echo "${oldconfig_buffer%
+__END__}" >&3
+		oldconfig_state=0
+		oldconfig_buffer=__END__
+	    fi
+	fi
+	
+	if [ "$line" = "$begin_section" ]; then
+	    while read -r line <&4 && [ "$line" != "$end_section" ]; do
+		case "$line" in
+		    "AuthName "*)
+			def_authname=${line#AuthName }
+			;;
+		esac
+	    done
+	    write_config
+	elif [ $oldconfig_newstate -eq $(($oldconfig_state + 1)) ]; then
+	    oldconfig_buffer=$(echo "${oldconfig_buffer%__END__}$line"; echo __END__)
+	    oldconfig_state=$oldconfig_newstate
+	    if [ $oldconfig_state -eq 6 ]; then
+		echo "Replacing obsolete webaccess configuration." >&2
+		oldconfig_state=0
+		oldconfig_buffer=__END__
+		def_authname=$oldconfig_authname
+	    fi
+	else
+	    echo "$line" >&3
+	fi
+    done
+    
+    if [ $oldconfig_state -ne 0 ]; then
+	echo "${oldconfig_buffer%
+__END__}"
+	oldconfig_state=0
+	oldconfig_buffer=__END__
+    fi
+    
+    exec 4<&-
+fi
 
-	open(HTACCESS, ">.htaccess");
-	print HTACCESS <<ENDFILE;
-AuthUserFile $ENV{PWD}/.htpasswd
-AuthName Private
-AuthType Basic
-<Limit GET>
-require valid-user
-</Limit>
-ENDFILE
-	close(HTACCESS);
-	chmod(0777, ".htaccess");
+write_config
 
-	my $salt = join '', ('.', '/', 0..9, 'A'..'Z', 'a'..'z') [rand 64, rand 64, rand 64, rand 64, rand 64, rand 64, rand 64, rand 64];
-	$password = crypt($password, '$1$'.$salt);
+exec 3>&-
+if ! cmp -s "$htaccess" "$tmp_htaccess"; then
+    if [ -s "$tmp_htaccess" ]; then
+	echo "Updating $htaccess" >&2
+	chmod 777 "$tmp_htaccess"
+	mv -f "$tmp_htaccess" "$htaccess"
+    else
+	if [ -e "$htaccess" ]; then
+	    echo "Deleting $htaccess" >&2
+	    rm -f "$htaccess"
+	fi
+	rm -f "$tmp_htaccess"
+    fi
+fi
+trap - EXIT
 
-	open(HTPASSWD, ">>.htpasswd");
-	print HTPASSWD "$username\:$password\n";
-	close(HTPASSWD);
-	chmod(0777, ".htpasswd");
-}
+if [ $enable_auth -eq 1 ]; then
+    if [ ! -e "$authuserfile" ]; then touch "$authuserfile"; fi
+    chmod 777 "$authuserfile"
+    
+    tmp_authuserfile=$authuserfile.webaccess-new
+    trap 'rm -f "$tmp_authuserfile"' EXIT
+    exec 3>"$tmp_authuserfile"
 
-print "\nDone.  New list of valid usernames:\n";
-open(HTPASSWD, ".htpasswd");
-while(my $line = <HTPASSWD>) {
-	$line =~ /(.*):/;
-	print "$1\n";
-}
-close(HTPASSWD);
-print "\n";
+    exec 4<"$authuserfile"
+    while IFS=: read user pass <&4; do
+	for del_user in $del_users; do
+	    if [ "$del_user" = "$user" ]; then
+		echo "Deleting user $del_user:" >&2
+		pass=
+	    fi
+	done
+	new_add_users=
+	for add_user in $add_users; do
+	    if [ "$add_user" = "$user" ]; then
+		pass=$(getpass "$user")
+	    else
+		new_add_users=$new_add_users\ $add_user
+	    fi
+	done
+	add_users=$new_add_users
+	if [ -n "$pass" ]; then
+	    echo "$user:$pass" >&3
+	fi
+    done
+    exec 4<&-
+    
+    for add_user in $add_users; do
+	pass=$(getpass "$add_user")
+	echo "$add_user:$pass" >&3
+    done
+    
+    exec 3>&-
+    chmod 777 "$tmp_authuserfile"
+    mv -f "$tmp_authuserfile" "$authuserfile"
+    trap - EXIT
+    
+    echo "Done.  New list of valid users:" >&2
+    sed -n 's/^\([^:]*\):.*$/  \1/ p' "$authuserfile"
+else
+    rm -f "$authuserfile"
+fi
