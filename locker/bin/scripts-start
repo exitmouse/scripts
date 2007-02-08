@@ -10,10 +10,9 @@ echo 4. e107
 echo 5. Gallery2
 echo 6. phpBB
 echo 7. Advanced Guest Book
-echo 8. Advanced Poll
-echo 9. PHP iCalendar
+echo 8. PHP iCalendar
 echo
-printf "Please enter a number 1-9: "
+printf "Please enter a number 1-8: "
 read num
 echo
 
@@ -33,11 +32,9 @@ elif [ "$num" -eq 6 ]; then
 elif [ "$num" -eq 7 ]; then
   . /mit/scripts/bin$scriptsdev/scripts-advancedbook
 elif [ "$num" -eq 8 ]; then
-  . /mit/scripts/bin$scriptsdev/scripts-advancedpoll
-elif [ "$num" -eq 9 ]; then
   . /mit/scripts/bin$scriptsdev/scripts-phpical
 else
   echo ERROR:
-  echo You must enter a number 1 through 9.
+  echo You must enter a number 1 through 8.
   exit 1
 fi
