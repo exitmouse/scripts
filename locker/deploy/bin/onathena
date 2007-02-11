@@ -109,6 +109,7 @@ fi
 if [ ! -f "$lroot/.my.cnf" ]; then
   mkdir $lroot/.sql 2>/dev/null
   fs sa $lroot/.sql system:anyuser none
+  fs sa $lroot/.sql system:authuser none
   fs sa $lroot/.sql daemon.scripts write
   ln -nfs $lroot/.sql/my.cnf $lroot/.my.cnf 2>/dev/null
 fi
@@ -177,6 +178,7 @@ fi
 if [ "$create_dir" -eq 1 ]; then
   mkdir -p "$lroot/scripts-$deploy"
   fs sa "$lroot/scripts-$deploy" system:anyuser none
+  fs sa "$lroot/scripts-$deploy" system:authuser none
   fs sa "$lroot/scripts-$deploy" daemon.scripts write
   fs sa "$lroot/scripts-$deploy" system:scripts-security-upd write
 fi
@@ -185,11 +187,13 @@ origdir=`pwd`
 mkdir -p "$lroot/web_scripts_tmp"
 cd "$lroot/web_scripts_tmp"
 fs sa . system:anyuser none
+fs sa . system:authuser none
 fs sa . daemon.scripts write
 fs sa . system:scripts-security-upd write
 mkdir -p "$lroot/web_scripts/$addrend"
 cd "$lroot/web_scripts/$addrend"
 fs sa . system:anyuser none
+fs sa . system:authuser none
 fs sa . daemon.scripts write
 fs sa . system:scripts-security-upd write
 athrun scripts gtar zxf "/mit/scripts/deploy$scriptsdev/$deploy.tar.gz"
@@ -200,7 +204,8 @@ if [ "$numfiles" -eq 1 ]; then
     rmdir $files
 fi
 if [ -f "/mit/scripts/deploy$scriptsdev/php.ini/$deploy" ]; then
-	sed /SCRIPTS_USER/s//$lname/ /mit/scripts/deploy$scriptsdev/php.ini/$deploy > php.ini
+	nodot=`echo $lname | sed "/\./s///"`;
+	sed -e /SCRIPTS_USER/s//$lname/ -e /SCRIPTS_NODOT/s//$nodot/ /mit/scripts/deploy$scriptsdev/php.ini/$deploy > php.ini
 	athrun scripts gfind . -mindepth 1 -type d -exec sh -c 'ln -sf "`echo "$1" | sed '\''s,[^/],,g; s,/,../,g'\''`php.ini" "$1/"' -- {} \;
 fi
 cd $origdir
