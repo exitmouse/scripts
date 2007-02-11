@@ -108,11 +108,12 @@ fi
 
 if [ ! -f "$lroot/.my.cnf" ]; then
   mkdir $lroot/.sql 2>/dev/null
-  fs sa $lroot/.sql system:anyuser none
-  fs sa $lroot/.sql system:authuser none
   fs sa $lroot/.sql daemon.scripts write
   ln -nfs $lroot/.sql/my.cnf $lroot/.my.cnf 2>/dev/null
 fi
+
+fs sa $lroot/.sql system:anyuser none
+fs sa $lroot/.sql system:authuser none
 
 if [ "$requires_sql" -eq 1 ]; then
   sqlinfo=`sshrun "sql/bin$scriptsdev/get-password"`
