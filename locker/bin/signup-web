@@ -6,6 +6,7 @@ attach -q scripts
 if [ ! -d "/mit/$lname/web_scripts/" ]; then
     mkdir -p /mit/$lname/web_scripts
     fs sa /mit/$lname/web_scripts system:anyuser l
+    fs sa /mit/$lname/web_scripts system:authuser l
     fs sa /mit/$lname/web_scripts system:scripts-security-upd rl
     fs sa /mit/$lname/web_scripts daemon.scripts write
     success "the web script service" "The directory /mit/$lname/web_scripts has been created."
