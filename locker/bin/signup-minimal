@@ -67,6 +67,17 @@ if [ ! -d "/mit/$lname" ]; then
   exit 0
 fi
 
+ans=`fs la /mit/$lname | grep "system:a.*user.*l" | wc -l`
+if [ "$ans" -eq 0 ]; then
+  echo
+  echo ERROR:
+  printf "It appears as though the locker <$lname> is not listable by system:anyuser.\n"
+  printf "You might want to run \"fs sa /mit/$lname system:anyuser l\"\n"
+  printf "(that's a lowercase L rather than a one) and then try again.\n"
+  echo Contact scripts@mit.edu if you are unable to solve the problem.
+  exit 0
+fi
+
 mkdir /mit/$lname/.scripts-signup 2>/dev/null
 
 if [ ! -d "/mit/$lname/.scripts-signup" ]; then
