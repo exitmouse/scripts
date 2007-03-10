@@ -88,7 +88,7 @@ if [ ! -d "/mit/$lname/.scripts-signup" ]; then
   exit 0
 fi
 
-athrun gnu wget -q -O/dev/null http://scripts.mit.edu/~signup/signup.php\?username=$lname
+athrun gnu wget -q -O/dev/null http://scripts.mit.edu/~signup/$lname
 rmdir /mit/$lname/.scripts-signup
 
 success() {
