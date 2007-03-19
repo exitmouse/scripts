@@ -84,7 +84,7 @@ echo The completed address must only contain a-z, 0-9, and /.
 printf "Desired address: http://scripts.mit.edu/~$lname/"
 read addrend
 
-addrend=`perl -e "\\\$temp = \"$addrend\"; \\\$temp =~ /(^([a-z0-9A-Z\\\\/-]+)\$)/; print \\\$1"`
+addrend=`perl -e "\\\$temp = \"$addrend\"; \\\$temp .= \"/\" unless \\\$temp =~ /\\\\/$/; \\\$temp =~ /(^([a-z0-9A-Z\\\\/-]+)\$)/; print \\\$1"`
 if [ "$addrend" = "" ]; then
 	echo
 	echo ERROR:
