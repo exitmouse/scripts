@@ -64,10 +64,10 @@ sub setup {
  
   if(-e "$HOME/web_scripts/$addrend/.admin") { 
     $admin_password=`cat $HOME/web_scripts/$addrend/.admin`;
-  }
-  chomp($admin_password);
-  unlink "$HOME/web_scripts/$addrend/.admin";
-  
+    chomp($admin_password);
+    unlink "$HOME/web_scripts/$addrend/.admin";
+  } 
+
   print "\nConfiguring $sname...\n";
   
   `date > .scripts-version`;

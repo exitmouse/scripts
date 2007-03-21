@@ -29,11 +29,13 @@ checksqlpass() {
     fi
 }
 
+#if [ "$override" = "" ]; then
 #echo "The scripts.mit.edu automatic installers are currently unavailable."
 #echo "We hope to make them available again soon."
 #echo "If you would like us to notify you as soon as they are available again,"
 #echo "let us know by sending us an e-mail at scripts@mit.edu"
-#exit
+#exit 
+#fi
 
 echo 
 echo == Welcome to the scripts.mit.edu installer for $sname ==
@@ -163,9 +165,23 @@ if [ "$prompt_username" -eq 1 ]; then
     fi
 fi
 
+origdir=`pwd`
+mkdir -p "$lroot/web_scripts_tmp"
+cd "$lroot/web_scripts_tmp"
+fs sa . system:anyuser none
+fs sa . system:authuser none
+fs sa . daemon.scripts write
+fs sa . system:scripts-security-upd write
+mkdir -p "$lroot/web_scripts/$addrend"
+cd "$lroot/web_scripts/$addrend"
+fs sa . system:anyuser none
+fs sa . system:authuser none
+fs sa . daemon.scripts write
+fs sa . system:scripts-security-upd write
+
 if [ "$prompt_password" -eq 1 ]; then
     stty -echo
-    sshrun "deploy$scriptdev/bin/prompt-password '$sname' '$deploy' '$addrend' '$admin_username'"
+    sshrun "deploy$scriptsdev/bin/prompt-password '$sname' '$deploy' '$addrend' '$admin_username'"
     stty echo
 fi
 
@@ -184,21 +200,8 @@ if [ "$create_dir" -eq 1 ]; then
   fs sa "$lroot/scripts-$deploy" system:scripts-security-upd write
 fi
 
-origdir=`pwd`
-mkdir -p "$lroot/web_scripts_tmp"
-cd "$lroot/web_scripts_tmp"
-fs sa . system:anyuser none
-fs sa . system:authuser none
-fs sa . daemon.scripts write
-fs sa . system:scripts-security-upd write
-mkdir -p "$lroot/web_scripts/$addrend"
-cd "$lroot/web_scripts/$addrend"
-fs sa . system:anyuser none
-fs sa . system:authuser none
-fs sa . daemon.scripts write
-fs sa . system:scripts-security-upd write
 athrun scripts gtar zxf "/mit/scripts/deploy$scriptsdev/$deploy.tar.gz"
-files=`athrun scripts gfind . -mindepth 1 -maxdepth 1`
+files=`athrun scripts gfind . -mindepth 1 -maxdepth 1 | grep -v .admin`
 numfiles=`echo "$files" | wc -l`
 if [ "$numfiles" -eq 1 ]; then
     athrun scripts gfind . -mindepth 2 -maxdepth 2 | xargs -i mv \{} .
