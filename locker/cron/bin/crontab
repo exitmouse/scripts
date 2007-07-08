@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Author: <quentin@mit.edu>
+
+if [[ "$1" = "-l" ]]; then
+	`dirname $0`/cronload -l;
+else
+	cat <<EOF;
+To edit your user-specific crontab, edit ~/cron_scripts/crontab and run
+cronload. cronload will concatenate ~/cron_scripts/crontab with the
+contents of ~/cron_scripts/AUTO/ and load them into the cron
+system. To see the full contents of your crontab on the server, use
+crontab -l
+EOF
+fi

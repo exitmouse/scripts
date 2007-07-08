@@ -1,0 +1,135 @@
+#!/usr/bin/perl
+
+# Author: <quentin@mit.edu>
+
+use strict;
+use warnings;
+
+use File::Spec::Functions;
+use Getopt::Long;
+
+use constant {
+    CRON_DIR => "cron_scripts",
+    CRONTAB_FILE => "crontab",
+    AUTO_DIR => "AUTO",
+    SPOOL_DIR => "/mit/scripts/cron/crontabs",
+};
+
+my $force = 0;
+my $list = 0;
+my $pretend = 0;
+
+sub get_crontabs() {
+    my $crontab = catfile($ENV{"HOME"}, CRON_DIR, CRONTAB_FILE);
+    my $crontabdir = catdir($ENV{"HOME"}, CRON_DIR, AUTO_DIR);
+    
+    my @crontabs;
+    
+    opendir(CRONTABS, $crontabdir) or print "You don't have a ".CRON_DIR."/".AUTO_DIR."/ directory\n";
+    push(@crontabs, grep { -r $_ } map { catfile($crontabdir, $_) } grep { !/^[\.#]/ } readdir(CRONTABS));
+    closedir(CRONTABS);
+    
+    push (@crontabs, $crontab) if (-r $crontab);
+    return @crontabs;
+}
+
+sub read_crontab($) {
+    my ($file) = @_;
+    # local $/;
+    
+    open(CRONTAB, $file) or die "Couldn't read crontab $file!";
+    my @lines = <CRONTAB>;
+    close(CRONTAB);
+    
+    return @lines;
+}
+
+sub check_crontab(@) {
+    my (@lines) = @_;
+    
+    my @errors;
+    
+    foreach my $line (@lines) {
+        $line =~ s|#.*$||; # Remove comments
+        $line =~ s|^\s*(.*?)\s*$|$1|; # Remove whitespace
+        
+        if ($line =~ m|^\w[\w\d]*=|) {
+            # Comment
+            next;
+        } elsif ($line =~ m|^(?:(\S+)\s+){5}(.*)|) {
+            # Crontab line
+            my ($minute, $hour, $day, $month, $dow) = ($1,$2,$3,$4,$5);
+            # FIXME: Validate the time fields.
+            next;
+        } elsif ($line =~ m|^\s*$|) {
+            # Whitespace
+            next;
+        } else {
+            push(@errors, "Unrecognized crontab line:\n$line\n");
+        }
+    }
+    return @errors;
+}
+
+
+
+GetOptions("force|f+" => \$force,
+	   "list|l" => \$list,
+	   "pretend|p" => \$pretend);
+
+if ($list) {
+    my $file = catfile(SPOOL_DIR, $ENV{"USER"});
+    local $/;
+    open (CRONTAB, $file) or die "No crontab installed.\n";
+    print <CRONTAB>;
+    close (CRONTAB);
+    exit;
+}
+
+my @crontabs = get_crontabs();
+my @all_errors;
+my @final_crontab;
+my ($numvalid, $numinvalid) = (0,0);
+
+foreach my $crontab (@crontabs) {
+    push(@final_crontab, "### $crontab\n");
+    my @crontab = read_crontab($crontab);
+    my @errors = check_crontab(@crontab);
+    if (@errors == 0) {
+        print "$crontab is a valid crontab\n";
+        push(@final_crontab, @crontab);
+        $numvalid++;
+    } else {
+        print "$crontab has errors:\n";
+        push(@all_errors, scalar(@errors)." errors in $crontab:\n", @errors);
+        print join("\n", @errors);
+        $numinvalid++;
+        if ($force >= 2) {
+            push(@final_crontab, @crontab);
+        } else {
+            my $errors = join("\n", @errors);
+            $errors =~ s|^|# |mg;
+            push(@final_crontab, "## $crontab was not installed due to errors:\n", $errors);
+        }
+    }
+}
+if ($pretend) {
+    print "Would install this crontab:\n";
+    print @final_crontab;
+    exit;
+}
+
+if ($force < 1 && @all_errors) {
+    print "Not loading new crontab. Use -f to force.\n";
+    exit;
+}
+if ($force >= 2 && @all_errors) {
+    print "Loading $numvalid crontab ($numinvalid BROKEN!) files...\n";
+} else {
+    print "Loading $numvalid crontab files...\n";
+}
+
+# FIXME
+# Load @final_crontab somehow
+
+print "done.\n";

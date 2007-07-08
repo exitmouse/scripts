@@ -1,0 +1,67 @@
+#!/bin/bash
+
+CRONROOT=/afs/athena.mit.edu/contrib/scripts/cron
+
+# Find our real hostname
+
+# This big long mess just results in a list of ip/name.
+for i in `/sbin/ip addr show dev eth0 | grep ' inet ' | cut -f 6 -d ' ' | cut -f 1 -d '/' | xargs -n 1 host | cut -f 1,5 -d ' ' | sed 'y/ /\//'`; do 
+	hostip=`echo $i | cut -f 1 -d '.'`
+	name=`echo $i | cut -f 2 -d '/'`
+	case $name in
+		SCRIPTS*) echo "$name";;
+		*) echo "Heartbeat for $name ($hostip)"; HOSTNAME=$name; HOSTIP=$hostip;;
+	esac;
+done
+
+# Tell everyone who's watching that we're alive
+touch $CRONROOT/servers/$HOSTNAME
+
+# Sleep based on our IP, in an attempt to not collide with another server also trying to gain control of the mirroring
+sleep $(($HOSTIP - 50))
+
+# Find the current master
+MASTER="DOES-NOT-EXIST"
+current_server () {
+	for i in $CRONROOT/server-crontabs/*; do
+		if [ -h $i ]; then
+			MASTER=`basename $i`
+			echo "Current master $MASTER"
+		fi
+	done
+}
+if lockfile -1 -r10 -l90 $CRONROOT/lock/heartbeat.lock; then
+    current_server
+
+	# The only way to compare times in bash is to compare the modtimes of two files.
+	compare=`mktemp /tmp/heartbeat-compare.XXXXXXXXXX`
+	touch -d '2 minutes ago' $compare
+	
+	if [[ $CRONROOT/servers/$MASTER -ot $compare ]]; then
+		# Master died! Take over.
+		echo "Master '$MASTER' died! Taking over."
+		for i in $CRONROOT/server-crontabs/*; do
+			if [ -h $i ]; then
+				echo rm $i
+				rm $i
+			else
+				echo rmdir $i
+				rmdir $i
+			fi
+		done
+		for i in $CRONROOT/servers/*; do
+			server=`basename $i`
+			case $server in
+				$HOSTNAME)
+					echo ln -s ../crontabs/ $CRONROOT/server-crontabs/$HOSTNAME
+					ln -s ../crontabs/ $CRONROOT/server-crontabs/$HOSTNAME;;
+				*)
+					echo mkdir $CRONROOT/server-crontabs/$server
+					mkdir $CRONROOT/server-crontabs/$server;;
+			esac;
+		done;
+	fi
+
+	rm $compare
+    rm -f $CRONROOT/lock/heartbeat.lock
+fi
