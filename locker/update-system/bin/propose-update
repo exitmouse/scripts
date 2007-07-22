@@ -1,0 +1,150 @@
+#!/usr/athena/bin/perl
+
+use File::Spec::Functions;
+use Data::Dumper;
+use Getopt::Long;
+use Cwd;
+
+my ($redodelete, $redoadd, $redoreplace, $redodiff) = (0,0,0,0);
+
+GetOptions("redo-delete" => \$redodelete,
+		   "redo-add" => \$redoadd,
+		   "redo-replace" => \$redoreplace,
+		   "redo-diff" => \$redodiff,
+		   "redo-all" => sub {$redodelete = $redoadd = $redoreplace = $redodiff = 1;}
+		  );
+
+if (@ARGV < 3) {
+  print STDERR "Usage: $0 [--redo-{delete,add,replace,diff,all}] package oldversion newversion\n";
+  exit(1);
+}
+
+my ($package, $oldversion, $newversion) = @ARGV;
+my ($old, $new, $updatename) = ($package.'-'.$oldversion, $package.'-'.$newversion, $package.'-'.$oldversion.'-to-'.$newversion);
+
+my $outdir = $updatename.".proposal";
+
+(-d $outdir || mkdir($outdir)) or die "mkdir($outdir) failed: $!";
+
+my $olddir = catdir($outdir,$old);
+my $newdir = catdir($outdir,$new);
+
+unpackPackage($old, $olddir);
+unpackPackage($old, $newdir);
+
+sub unpackPackage($$) {
+  my ($package, $dir) = @_;
+  print "Extracting $package to $dir...";
+  if (-d $dir) {
+    warn "$dir already exists; assuming unpacking was successful";
+    return;
+  }
+  mkdir($dir) or die "mkdir($dir) failed: $!";
+  my $cwd = cwd();
+  chdir($dir) or die $!;
+  `athrun scripts gtar zxf "/mit/scripts/deploy$scriptsdev/$package.tar.gz"`; $? && die "Failed to unpack $package.tar.gz: $?";
+  my @files=`athrun scripts gfind . -mindepth 1 -maxdepth 1 | grep -v .admin`;
+  if (@files <= 1) {
+    `athrun scripts gfind . -mindepth 2 -maxdepth 2 | xargs -i mv \{} .`;
+    rmdir($files[0]);
+  }
+  chdir($cwd) or die "Couldn't return to $cwd";
+  print "done.\n";
+}
+
+my @oldfiles = sort { $a->[1] cmp $b->[1] } map { chomp; s|$olddir\/?||g; [split(' ', $_, 2)] } `athrun scripts gfind $olddir -type f | xargs -i md5sum \{}`;
+#print Dumper(\@oldfiles);
+my @newfiles = sort { $a->[1] cmp $b->[1] } map { chomp; s|$newdir\/?||g; [split(' ', $_, 2)] } `athrun scripts gfind $newdir -type f | xargs -i md5sum \{}`;
+#print Dumper(\@newfiles);
+
+sub compareDirectories($$) {
+  my ($alist, $blist) = @_;
+  my @a = @$alist;
+  my @b = @$blist;
+  my @aonly, @bonly, @both;
+  $a = $b = 0;
+  my $debug = 1;
+  local $Data::Dumper::Indent = 0;
+  while ($a <= $#a || $b <= $#a) {
+    my $fa = $a[$a];
+    my $fb = $b[$b];
+    print STDERR "Comparing ".Dumper($fa, $fb)."\n" if $debug;
+    if ($fa->[1] eq $fb->[1]) { # Same file exists on both
+      print STDERR "Same file\n" if $debug;
+      if ($fa->[0] ne $fb->[0]) { # File has changed in some way
+	print STDERR "Different md5, pushing on \@both\n" if $debug;
+	push(@both, [$fa->[1], $fa, $fb]);
+      }
+      $a++; $b++; # increment both counters
+    } else {
+      my $a2 = $a;
+      while ($a2 <= $#a && $a[$a2]->[1] lt $fb->[1]) {
+	$a2++;
+      }
+      if ($a2 <= $#a && $a[$a2]->[1] eq $fb->[1]) {
+	for my $i ($a..$a2-1) {
+	  push @aonly, $a[$i];
+	}
+	$a = $a2;
+      } else {
+	my $b2 = $b;
+	while ($b2 <= $#b && $b[$b2]->[1] lt $fa->[1]) {
+	  $b2++;
+	}
+	if ($b2 <= $#b && $b[$b2]->[1] eq $fa->[1]) {
+	  for my $i ($b..$b2-1) {
+	    push @bonly, $b[$i];
+	  }
+	  $b = $b2;
+	} else {
+	  push @aonly, $a[$a];
+	  push @bonly, $b[$b];
+	  $a++; $b++;
+	}
+      }
+    }
+  }
+  return (\@aonly, \@bonly, \@both);
+}
+
+my (@todelete, @toadd, @changed);
+my @comp = compareDirectories(\@oldfiles, \@newfiles);
+print Dumper(@comp);
+@todelete = @{$comp[0]};
+@toadd = @{$comp[1]};
+@changed = @{$comp[2]};
+
+if ($redodelete or ! -e catfile($outdir, "files.delete")) {
+	open(TODELETE, ">", catfile($outdir, "files.delete")) or die "Can't open files.delete: $!";
+	foreach my $file (@todelete) {
+	  printf TODELETE "%s %s\n", $file->[0], $file->[1];
+	}
+	close(TODELETE);
+}
+
+if ($redoadd or ! -e catfile($outdir, "files.add")) {
+	open(TOADD, ">", catfile($outdir, "files.add")) or die "Can't open files.add: $!";
+	foreach my $file (@toadd) {
+	  printf TOADD "%s # MD5 = %s\n", $file->[1], $file->[0];
+	}
+	close(TOADD);
+}
+
+my @toreplace;
+my @topatch;
+
+foreach my $file (@changed) {
+	if (-B catdir($newdir, $file->[0])) {
+		push (@toreplace, $file);
+	} else {
+		push (@topatch, $file);
+	}
+}
+
+if ($redoreplace or ! -e catfile($outdir, "files.replace")) {
+	open(TOREPLACE, ">", catfile($outdir, "files.replace")) or die "Can't open files.replace: $!";
+	foreach my $file (@toreplace) {
+		printf TOREPLACE "%s %s\n", $file->[2][0], $file->[0];
+	}
+	close(TOREPLACE);
+}
