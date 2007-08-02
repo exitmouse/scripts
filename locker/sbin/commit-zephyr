@@ -27,11 +27,11 @@ svnlook info "$REPOS" -r "$REV" | (
     log=$(cat)
     echo "r$REV by $author $datestamp"
     echo "$log"
+    svnlook changed "$REPOS" -r "$REV"
     if [ "$FULL" -eq 1 ]; then
 	echo
 	svnlook diff "$REPOS" -r "$REV"
     else
-	svnlook changed "$REPOS" -r "$REV"
 	echo svnlook diff "$REPOS" -r "$REV"
     fi
 ) | zwrite -d -c "$CLASS" -i "$INSTANCE" -s "r$REV - $dirs"
