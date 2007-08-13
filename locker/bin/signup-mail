@@ -6,7 +6,7 @@ attach scripts 2>/dev/null
 if [ ! -d "/mit/$lname/mail_scripts/" ]; then
   mkdir 2>/dev/null /mit/$lname/mail_scripts
   fs sa /mit/$lname/mail_scripts system:anyuser l
-  fs sa /mit/$lname/mail_scripts system:authuser l
+  fs sa /mit/$lname/mail_scripts system:authuser none
   fs sa /mit/$lname/mail_scripts daemon.scripts read
   sed /SCRIPTS_USER/s//$lname/ /mit/scripts/bin/procmailrc > /mit/$lname/mail_scripts/procmailrc
 #  echo -e ":0\n*\n! $USER@mit.edu" >/mit/$lname/mail_scripts/procmailrc
