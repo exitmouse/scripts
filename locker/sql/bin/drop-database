@@ -3,7 +3,7 @@
 
 list($h,$u,$p) = explode("\t",`/mit/scripts/sql/bin/get-password`);
 $d = $argv[1];
-$drop_r = explode(',',file_get_contents('http://sql.mit.edu/~sql/main/do/batch/drop_db?d=' . urlencode($d) . '&u=' . urlencode($u) . '&p=' . urlencode($p)));
+$drop_r = explode(',',file_get_contents('https://sql.mit.edu/main/do/batch/drop_db?d=' . urlencode($d) . '&u=' . urlencode($u) . '&p=' . urlencode($p)));
 $return_r = array_shift($drop_r);
 $dropped = implode(',',$drop_r);
 if ($return_r == '0') echo $dropped;

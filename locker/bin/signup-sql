@@ -76,6 +76,7 @@ if [ ! -f "$lroot/.my.cnf" ]; then
   fs sa $lroot/.sql system:anyuser none
   fs sa $lroot/.sql system:authuser none
   fs sa $lroot/.sql daemon.scripts write
+  fs sa $lroot/.sql daemon.sql write
   ln -nfs $lroot/.sql/my.cnf $lroot/.my.cnf 2>/dev/null
 fi
 

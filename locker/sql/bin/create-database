@@ -3,7 +3,7 @@
 
 list($h,$u,$p) = explode("\t",`/mit/scripts/sql/bin/get-password`);
 $d = $argv[1];
-$create_r = explode(',',file_get_contents('http://sql.mit.edu/~sql/main/do/batch/create_db?d=' . urlencode($d) . '&u=' . urlencode($u) . '&p=' . urlencode($p)));
+$create_r = explode(',',file_get_contents('https://sql.mit.edu/main/do/batch/create_db?d=' . urlencode($d) . '&u=' . urlencode($u) . '&p=' . urlencode($p)));
 $return_r = array_shift($create_r);
 $created = implode(',',$create_r);
 if ($return_r == '0') echo $created;

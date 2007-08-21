@@ -1,6 +1,6 @@
 #!/bin/sh
 
-status=`wget http://sql.mit.edu/~sql/main/do/batch/status?u=$USER -q -O-`
+status=`wget --no-check-certificate https://sql.mit.edu/main/do/batch/status?u=$USER -q -O-`
 
 echo $status
 exit $status

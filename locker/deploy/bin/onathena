@@ -111,6 +111,7 @@ fi
 if [ ! -f "$lroot/.my.cnf" ]; then
   mkdir $lroot/.sql 2>/dev/null
   fs sa $lroot/.sql daemon.scripts write
+  fs sa $lroot/.sql daemon.sql write
   ln -nfs $lroot/.sql/my.cnf $lroot/.my.cnf 2>/dev/null
 fi
 
