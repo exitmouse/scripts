@@ -7,11 +7,14 @@ use Cwd;
 
 my ($redodelete, $redoadd, $redoreplace, $redodiff) = (0,0,0,0);
 
+my $scriptsdev = "";
+
 GetOptions("redo-delete" => \$redodelete,
-		   "redo-add" => \$redoadd,
-		   "redo-replace" => \$redoreplace,
-		   "redo-diff" => \$redodiff,
-		   "redo-all" => sub {$redodelete = $redoadd = $redoreplace = $redodiff = 1;}
+	   "redo-add" => \$redoadd,
+	   "redo-replace" => \$redoreplace,
+	   "redo-diff" => \$redodiff,
+	   "redo-all" => sub {$redodelete = $redoadd = $redoreplace = $redodiff = 1;},
+	   "dev" => sub {$scriptsdev = "dev";},
 		  );
 
 if (@ARGV < 3) {
