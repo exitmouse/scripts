@@ -1,0 +1,10 @@
+#!/bin/sh
+
+exec ssh \
+	-o GSSAPIAuthentication=yes \
+	-o GSSAPIDelegateCredentials=no \
+	-o PreferredAuthentications=gssapi-with-mic \
+	-o ForwardX11=no \
+	-o GlobalKnownHostsFile=/afs/athena.mit.edu/contrib/scripts/ssh/known_hosts \
+	-o UserKnownHostsFile=/dev/null \
+	scripts.mit.edu "$@"

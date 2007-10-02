@@ -7,4 +7,4 @@ echo
 
 cwd=`pwd`
 lname=`perl -e "\\\$temp = \"$cwd\"; \\\$temp =~ /\\\/([^\\\/]+)\\\/cron_scripts/; print \\\$1"`
-athrun scripts sshmic ${lname}@scripts.mit.edu "/usr/local/bin/cronload $1 $cwd" 2>/dev/null
+athrun scripts scripts-ssh -l "$lname" /usr/local/bin/cronload "$1" "$cwd" 2>/dev/null

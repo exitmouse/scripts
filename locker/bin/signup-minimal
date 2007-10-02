@@ -47,7 +47,7 @@ if [ "$lname" != "$USER" ]; then
   . /mit/scripts/bin$scriptsdev/signup-minimal
   lname=$temp
 
-  ans=`athrun scripts sshmic -k scripts.mit.edu /usr/local/bin/admof $lname ${USER}@ATHENA.MIT.EDU` 
+  ans=`athrun scripts scripts-ssh /usr/local/bin/admof "$lname" "$USER@ATHENA.MIT.EDU"` 
   if [ "$ans" != "yes" ]; then
     echo
     echo ERROR:
