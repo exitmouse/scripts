@@ -1,0 +1,111 @@
+#!/usr/athena/bin/perl
+
+use File::Spec::Functions qw(:ALL);
+use File::Copy;
+use File::Path;
+use Data::Dumper;
+use Getopt::Long;
+use Cwd;
+use strict;
+use warnings;
+
+my $scriptsdev = "";
+
+GetOptions(
+#"redo-delete" => \$redodelete,
+#	   "redo-add" => \$redoadd,
+#	   "redo-replace" => \$redoreplace,
+#	   "redo-diff" => \$redodiff,
+#	   "redo-all" => sub {$redodelete = $redoadd = $redoreplace = $redodiff = 1;},
+	   "dev" => sub {$scriptsdev = "dev";},
+		  );
+
+if (@ARGV < 3) {
+  print STDERR "Usage: $0 package oldversion newversion\n";
+  exit(1);
+}
+
+my ($package, $oldversion, $newversion) = @ARGV;
+my ($old, $new, $updatename) = ($package.'-'.$oldversion, $package.'-'.$newversion, $package.'-'.$oldversion.'-to-'.$newversion);
+
+my $proposaldir = $updatename.".proposal";
+my $outdir = catdir("/mit/scripts/deploy$scriptsdev/updates/", $updatename);
+
+(-d $proposaldir) or die "Can't find $proposaldir, did you run propose-update?\n";
+(-d $outdir || mkdir($outdir)) or die "mkdir($outdir) failed: $!";
+
+my $olddir = catdir($proposaldir,$old);
+my $newdir = catdir($proposaldir,$new);
+(-d $olddir && -d $newdir) or die "Packages not unpacked?\n";
+
+sub readFileList($) {
+  my ($list) = @_;
+  open(LIST, $list) or die "Can't read $list: $!\n";
+  my @files = map { chomp; s|$newdir\/?||g; [split(' ', $_, 2)] } <LIST>;
+  close(LIST);
+  return @files;
+}
+
+my @todelete = readFileList(catfile($proposaldir, "files.delete"));
+my @toadd = readFileList(catfile($proposaldir, "files.add"));
+my @toreplace = readFileList(catfile($proposaldir, "files.replace"));
+
+open(CHECKMD5, ">", catfile($outdir, "check.md5")) or die "Can't open check.md5: $!";
+print CHECKMD5 map { join(" ", @{$_})."\n" } @todelete, @toreplace;
+close(CHECKMD5);
+
+open(ABSENT, ">", catfile($outdir, "oldfiles.absent")) or die "Can't open oldfiles.absent: $!";
+print ABSENT map { $_->[1]."\n" } @toadd;
+close(ABSENT);
+
+open(DELETE, ">", catfile($outdir, "files.delete")) or die "Can't open files.delete: $!";
+print DELETE map { $_->[1]."\n" } @todelete, @toreplace;
+close(DELETE);
+
+my $outfiledir = catdir($outdir, "newfiles");
+(-d $outfiledir || mkdir($outfiledir)) or die "Can't mkdir($outfiledir)\n";
+
+foreach my $file (@toadd, @toreplace) {
+  my $filename = $file->[1];
+  my $src = catfile($newdir, $filename);
+  my $dest = catfile($outfiledir, $filename);
+  my (undef, $dir, undef) = splitpath($dest);
+  mkpath($dir);
+  copy($src, $dest) or die "Couldn't copy $filename from $src to $dest: $!";
+}
+
+copy(catfile($proposaldir, "update.diff"), catfile($outdir, "update.diff")) or die "Couldn't copy update.diff: $!";
+
+open (SCRIPT, ">", catfile($outdir, "update")) or die "Couldn't write update: $!";
+printf SCRIPT <<'EOF', $updatename, $new;
+#!/bin/bash
+set -e -o noclobber
+
+die () { echo "$1" >&2; exit 1; }
+
+patchdir=$(dirname "$0")
+
+>.scripts-security-upd-lock || die "error: Unable to obtain update lock."
+
+echo "[$PWD] begin dry run"
+
+xargs -n1 test ! -e <"$patchdir/oldfiles.absent" || die "error: Conflicting files exist."
+md5sum -c "$patchdir/check.md5" || die "error: MD5 check failed."
+patch -stN --dry-run --no-backup-if-mismatch -p1 <"$patchdir/update.diff" || due "error: Patch dry run failed."
+
+echo "[$PWD] dry run OK, applying update"
+
+mv .scripts-version .scripts-version.old
+patch -stN --no-backup-if-mismatch -p1 <"$patchdir/update.diff" || :
+xargs rm -f <"$patchdir/files.delete"
+cp -a "$patchdir/newfiles/." .
+(cat .scripts-version.old; date; echo "%s"; echo "%s") >>.scripts-version
+rm -f .scripts-version.old
+
+rm -f .scripts-security-upd-lock
+
+echo "[$PWD] done"
+
+exit 0
+EOF
+chmod 0755, catfile($outdir, "update");

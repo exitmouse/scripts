@@ -33,11 +33,11 @@ my $olddir = catdir($outdir,$old);
 my $newdir = catdir($outdir,$new);
 
 unpackPackage($old, $olddir);
-unpackPackage($old, $newdir);
+unpackPackage($new, $newdir);
 
 sub unpackPackage($$) {
   my ($package, $dir) = @_;
-  print "Extracting $package to $dir...";
+  print STDERR "Extracting $package to $dir... ";
   if (-d $dir) {
     warn "$dir already exists; assuming unpacking was successful";
     return;
@@ -112,7 +112,9 @@ sub compareDirectories($$) {
 
 my (@todelete, @toadd, @changed);
 my @comp = compareDirectories(\@oldfiles, \@newfiles);
-print Dumper(@comp);
+open(DIFF, ">", catfile($outdir, "diff.pl"));
+print DIFF Dumper(@comp);
+close(DIFF);
 @todelete = @{$comp[0]};
 @toadd = @{$comp[1]};
 @changed = @{$comp[2]};
@@ -123,15 +125,17 @@ if ($redodelete or ! -e catfile($outdir, "files.delete")) {
 	  printf TODELETE "%s %s\n", $file->[0], $file->[1];
 	}
 	close(TODELETE);
-}
+	printf "Wrote %d filenames to files.delete\n", scalar(@todelete);
+} else { printf "Not overwriting existing files.delete\n"; }
 
 if ($redoadd or ! -e catfile($outdir, "files.add")) {
 	open(TOADD, ">", catfile($outdir, "files.add")) or die "Can't open files.add: $!";
 	foreach my $file (@toadd) {
-	  printf TOADD "%s # MD5 = %s\n", $file->[1], $file->[0];
+	  printf TOADD "%s %s\n", $file->[0], $file->[1];
 	}
 	close(TOADD);
-}
+	printf "Wrote %d filenames to files.add\n", scalar(@toadd);
+} else { printf "Not overwriting existing files.add\n"; }
 
 my @toreplace;
 my @topatch;
@@ -147,7 +151,22 @@ foreach my $file (@changed) {
 if ($redoreplace or ! -e catfile($outdir, "files.replace")) {
 	open(TOREPLACE, ">", catfile($outdir, "files.replace")) or die "Can't open files.replace: $!";
 	foreach my $file (@toreplace) {
-		printf TOREPLACE "%s %s\n", $file->[2][0], $file->[0];
+		printf TOREPLACE "%s %s\n", $file->[1][0], $file->[0];
 	}
 	close(TOREPLACE);
-}
+	printf "Wrote %d filenames to files.replace\n", scalar(@toreplace);
+} else { printf "Not overwriting existing files.replace\n"; }
+
+if ($redodiff or ! -e catfile($outdir, "update.diff")) {
+    open(DIFF, ">", catfile($outdir, "update.diff")) or die "Can't open update.diff: $!";
+    foreach my $file (@topatch) {
+	my $filename = $file->[0];
+	my $oldfile = catfile($olddir, $file->[1][1]);
+	my $newfile = catfile($newdir, $file->[2][1]);
+	my $cmd = "diff -urN $oldfile $newfile";
+	print DIFF "$cmd\n";
+	print DIFF `$cmd`;
+    }
+    close(DIFF);
+    printf "Wrote %d diffs to update.diff\n", scalar(@topatch);
+} else { printf "Not overwriting existing update.patch\n"; }
