@@ -51,7 +51,7 @@ my @toadd = readFileList(catfile($proposaldir, "files.add"));
 my @toreplace = readFileList(catfile($proposaldir, "files.replace"));
 
 open(CHECKMD5, ">", catfile($outdir, "check.md5")) or die "Can't open check.md5: $!";
-print CHECKMD5 map { join(" ", @{$_})."\n" } @todelete, @toreplace;
+print CHECKMD5 map { join("  ", @{$_})."\n" } @todelete, @toreplace;
 close(CHECKMD5);
 
 open(ABSENT, ">", catfile($outdir, "oldfiles.absent")) or die "Can't open oldfiles.absent: $!";
@@ -91,12 +91,12 @@ echo "[$PWD] begin dry run"
 
 xargs -n1 test ! -e <"$patchdir/oldfiles.absent" || die "error: Conflicting files exist."
 md5sum -c "$patchdir/check.md5" || die "error: MD5 check failed."
-patch -stN --dry-run --no-backup-if-mismatch -p1 <"$patchdir/update.diff" || due "error: Patch dry run failed."
+patch -stN --dry-run --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || due "error: Patch dry run failed."
 
 echo "[$PWD] dry run OK, applying update"
 
 mv .scripts-version .scripts-version.old
-patch -stN --no-backup-if-mismatch -p1 <"$patchdir/update.diff" || :
+patch -stN --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || :
 xargs rm -f <"$patchdir/files.delete"
 cp -a "$patchdir/newfiles/." .
 (cat .scripts-version.old; date; echo "%s"; echo "%s") >>.scripts-version
