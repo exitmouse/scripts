@@ -1,0 +1,15 @@
+--- includes/Setup.php	Fri Aug 26 10:05:43 2005
++++ includes/Setup.php	Fri Sep 23 18:46:34 2005
+@@ -117,12 +117,6 @@
+ wfProfileOut( $fname.'-memcached' );
+ wfProfileIn( $fname.'-SetupSession' );
+ 
+-if ( $wgDBprefix ) {
+-	session_name( $wgDBname . '_' . $wgDBprefix . '_session' );
+-} else {
+-	session_name( $wgDBname . '_session' );
+-}
+-
+ if( !$wgCommandLineMode && ( isset( $_COOKIE[session_name()] ) || isset( $_COOKIE[$wgDBname.'Token'] ) ) ) {
+ 	User::SetupSession();
+ 	$wgSessionStarted = true;

@@ -1,0 +1,41 @@
+diff -Nur mediawiki-1.11.0.old/AdminSettings.php mediawiki-1.11.0/AdminSettings.php
+--- mediawiki-1.11.0.old/AdminSettings.php	1969-12-31 19:00:00.000000000 -0500
++++ mediawiki-1.11.0/AdminSettings.php	2007-10-09 17:32:52.000000000 -0400
+@@ -0,0 +1,20 @@
++<?php
++/**
++ * On scripts.mit.edu, the user's sole account can be used
++ * both for regular operation of the wiki and for any
++ * maintenance.  Therefore, we just use the username and
++ * password already set in LocalSettings.php.
++ *
++ * @package MediaWiki
++ */
++          
++$wgDBadminuser      = $wgDBuser;
++$wgDBadminpassword  = $wgDBpassword;
++          
++/*
++ * Whether to enable the profileinfo.php script.
++ * (False is the default.)
++ */
++$wgEnableProfileInfo = false;
++          
++?>
+diff -Nur mediawiki-1.11.0.old/includes/Setup.php mediawiki-1.11.0/includes/Setup.php
+--- mediawiki-1.11.0.old/includes/Setup.php	2007-07-22 10:45:12.000000000 -0400
++++ mediawiki-1.11.0/includes/Setup.php	2007-10-09 18:44:39.000000000 -0400
+@@ -188,11 +188,11 @@
+ wfProfileIn( $fname.'-SetupSession' );
+ 
+ if ( $wgDBprefix ) {
+-	$wgCookiePrefix = $wgDBname . '_' . $wgDBprefix;
++	$wgCookiePrefix = str_replace("+", "", $wgDBname . '_' . $wgDBprefix);
+ } elseif ( $wgSharedDB ) {
+ 	$wgCookiePrefix = $wgSharedDB;
+ } else {
+-	$wgCookiePrefix = $wgDBname;
++	$wgCookiePrefix = str_replace("+", "", $wgDBname);
+ }
+ $wgCookiePrefix = strtr($wgCookiePrefix, "=,; +.\"'\\[", "__________");
+ 
