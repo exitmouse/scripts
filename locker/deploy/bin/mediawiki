@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 use strict;
-use lib '/mit/scripts/deploy/bin';
+use lib '/mit/scripts/deploydev/bin';
 use onserver;
 
 setup();
@@ -13,6 +13,6 @@ my $title=<STDIN>;
 chomp($title);
 totmp("-d \"Sitename=$title&EmergencyContact=$USER\@mit.edu&LanguageCode=en&DBserver=$sqlhost&DBname=$sqldbcurl&DBuser=$sqluser&DBpassword=$sqlpass&DBpassword2=$sqlpass&defaultEmail=$USER\@mit.edu&SysopName=$admin_username&SysopPass=$admin_password&SysopPass2=$admin_password\"");
 `curl -K $tmp http://$server/~$USER/$addrend/config/index.php`; 
-`patch includes/Setup.php /mit/scripts/deploy/mediawiki.patch >/dev/null`;
+`patch -p1 < /mit/scripts/deploy/mediawiki.patch >/dev/null`;
 `cp config/LocalSettings.php .`;
 `rm -rf contrib`;

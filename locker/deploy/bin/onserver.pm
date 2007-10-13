@@ -1,6 +1,12 @@
 package onserver;
 use strict;
 use Exporter;
+use Sys::Hostname;
+use File::Spec::Functions;
+use File::Basename;
+use Socket;
+use Cwd qw(abs_path);
+use POSIX qw(strftime);
 our @ISA = qw(Exporter);
 our @EXPORT = qw(setup totmp print_login_info press_enter $server $tmp $USER $HOME $sname $deploy $addrend $admin_username $requires_sql $addrlast $sqlhost $sqluser $sqlpass $sqldb $sqldbcurl $admin_password $scriptsdev $human);
 
@@ -19,6 +25,16 @@ sub print_login_info {
   print "\nYou will be able to log in to $sname using the following:\n";
   print "  username: $admin_username\n";
   print "  password: $admin_password\n";
+}
+
+sub getclienthostname {
+    if (my $sshclient = $ENV{"SSH_CLIENT"}) {
+	my ($clientip) = split(' ', $sshclient);
+	my $hostname = gethostbyaddr(inet_aton($clientip), AF_INET);
+	return $hostname || $clientip;
+    } else {
+	return hostname();
+    }
 }
 
 sub press_enter {
@@ -70,8 +86,18 @@ sub setup {
 
   print "\nConfiguring $sname...\n";
   
-  `date > .scripts-version`;
-  `stat /mit/scripts/deploy$scriptsdev/$deploy.tar.gz >> .scripts-version`;
+  open(VERSION, ">.scripts-version") or die "Can't write scripts-version file: $!\n";
+  print VERSION strftime("%F %T %z\n", localtime);
+  print VERSION $ENV{'USER'}, '@', getclienthostname(), "\n";
+  my $tarball = abs_path("/mit/scripts/deploy$scriptsdev/$deploy.tar.gz");
+  print VERSION $tarball, "\n";
+  $tarball =~ s|/deploydev/|/deploy/|;
+  print VERSION dirname($tarball), "\n";
+  close(VERSION);
+  if (0) {
+      `date > .scripts-version`;
+      `stat /mit/scripts/deploy$scriptsdev/$deploy.tar.gz >> .scripts-version`;
+  }
 
   select STDOUT;
   $| = 1; # STDOUT is *hot*!
