@@ -20,7 +20,7 @@ my $html = fetch_uri(
     'wp-admin/install.php',
     {step => 2},
     {weblog_title => 'My Blog',
-     admin_email => "$human\@mit.edu",
+     admin_email => $email,
      submit => 'Continue',
      step => 2});
 while ($html =~ /<dd><code>(.*)<\/code><\/dd>/g) {

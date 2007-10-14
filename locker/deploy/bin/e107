@@ -28,7 +28,7 @@ my ($prevc) = fetch_uri(
      d_name => $admin_username,
      pass1 => $admin_password,
      pass2 => $admin_password,
-     email => "$human\@mit.edu",
+     email => $email,
      stage => 6,
      previous_steps => $prevb}) =~ /name='previous_steps' value='(.*)'/;
 

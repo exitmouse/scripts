@@ -34,7 +34,7 @@ fetch_uri(
      sitename => $title,
      siteUrl => $base_uri,
      absolutePath => getcwd(),
-     adminEmail => "$human\@mit.edu",
+     adminEmail => $email,
      adminPassword => $admin_password,
      filePerms => 0,
      dirPerms => 0});

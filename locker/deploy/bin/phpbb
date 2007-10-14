@@ -17,7 +17,7 @@ fetch_uri(
      dbname => $sqldb,
      dbpasswd => $sqlpass,
      prefix => '',
-     board_email => "$human\@mit.edu",
+     board_email => $email,
      server_name => $server,
      server_port => 80,
      script_path => "/~$USER/$addrend/",

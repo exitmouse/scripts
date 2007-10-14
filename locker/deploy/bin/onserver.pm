@@ -10,11 +10,11 @@ use POSIX qw(strftime);
 use LWP::UserAgent;
 use URI;
 our @ISA = qw(Exporter);
-our @EXPORT = qw(setup totmp fetch_uri print_login_info press_enter $server $tmp $USER $HOME $sname $deploy $addrend $base_uri $ua $admin_username $requires_sql $addrlast $sqlhost $sqluser $sqlpass $sqldb $sqldbcurl $admin_password $scriptsdev $human);
+our @EXPORT = qw(setup totmp fetch_uri print_login_info press_enter $server $tmp $USER $HOME $sname $deploy $addrend $base_uri $ua $admin_username $requires_sql $addrlast $sqlhost $sqluser $sqlpass $sqldb $admin_password $scriptsdev $human $email);
 
 our $server = "scripts.mit.edu";
 
-our ($tmp, $USER, $HOME, $sname, $deploy, $addrend, $base_uri, $ua, $admin_username, $requires_sql, $addrlast, $sqlhost, $sqluser, $sqlpass, $sqldb, $sqldbcurl, $admin_password, $scriptsdev, $human);
+our ($tmp, $USER, $HOME, $sname, $deploy, $addrend, $base_uri, $ua, $admin_username, $requires_sql, $addrlast, $sqlhost, $sqluser, $sqlpass, $sqldb, $admin_password, $scriptsdev, $human, $email);
 
 $tmp = ".scripts-tmp";
 sub totmp {
@@ -79,6 +79,7 @@ sub setup {
   
   ($sname, $deploy, $addrend, $admin_username, $requires_sql, $scriptsdev, $human) = @ARGV;
   chdir "$HOME/web_scripts/$addrend";
+  $email = "$human\@mit.edu";
   
   if($addrend =~ /^(.*)\/$/) {
     $addrend = $1;
@@ -110,8 +111,6 @@ sub setup {
       close FAILED;
       exit 1;
     }
-    $sqldbcurl = $sqldb;
-    $sqldbcurl =~ s/\+/\%2B/;
   }
  
   if(-e "$HOME/web_scripts/$addrend/.admin") { 

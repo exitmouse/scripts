@@ -14,7 +14,7 @@ $a =~ s/localhost/$sqlhost/g;
 $a =~ s/dbuser/$sqluser/g;
 $a =~ s/dbpass/$sqlpass/g;
 $a =~ s/guestbookdb/$sqldb/g;
-$a =~ s/useremail/$human\@mit.edu/g;
+$a =~ s/useremail/$email/g;
 open(FILE, ">admin/config.inc.php");
 print FILE $a;
 close(FILE);
