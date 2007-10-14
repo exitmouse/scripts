@@ -8,7 +8,7 @@ if [ "$scriptsdev" != "" -a "$scriptsdev" != "dev" ]; then
 fi
 
 sshrun() {
-    athrun scripts scripts-ssh -l "$lname" "/mit/scripts/$@" 2>/dev/null
+    athrun scripts scripts-ssh "$lname" "/mit/scripts/$@" 2>/dev/null
 }
 
 checksqlpass() {

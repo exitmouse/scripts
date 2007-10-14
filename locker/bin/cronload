@@ -7,4 +7,4 @@ echo
 
 cwd=`pwd`
 lname=`perl -e "\\\$temp = \"$cwd\"; \\\$temp =~ /\\\/([^\\\/]+)\\\/cron_scripts/; print \\\$1"`
-athrun scripts scripts-ssh -l "$lname" /usr/local/bin/cronload "$1" "$cwd" 2>/dev/null
+athrun scripts scripts-ssh "$lname" /usr/local/bin/cronload "$1" "$cwd" 2>/dev/null

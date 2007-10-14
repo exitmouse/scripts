@@ -1,4 +1,7 @@
-#!/bin/sh
+#!/bin/bash
+
+lname=$1
+shift
 
 exec ssh \
 	-o GSSAPIAuthentication=yes \
@@ -7,4 +10,4 @@ exec ssh \
 	-o ForwardX11=no \
 	-o GlobalKnownHostsFile=/afs/athena.mit.edu/contrib/scripts/ssh/known_hosts \
 	-o UserKnownHostsFile=/dev/null \
-	scripts.mit.edu "$@"
+	scripts.mit.edu -l "$lname" "$(printf "%q " "$@")"

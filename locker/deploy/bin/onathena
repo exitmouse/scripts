@@ -17,11 +17,11 @@ die() {
   
 
 sshrun() {
-  athrun scripts scripts-ssh -l "$lname" "/mit/scripts/$@" 2>/dev/null
+  athrun scripts scripts-ssh "$lname" "/mit/scripts/$@" 2>/dev/null
 }
 
 vsshrun() {
-  athrun scripts scripts-ssh -l "$lname" "/mit/scripts/$@"
+  athrun scripts scripts-ssh "$lname" "/mit/scripts/$@"
 }
 
 checksqlpass() {
@@ -31,9 +31,8 @@ checksqlpass() {
           rm -f "$lroot/.sql/my.cnf"
         fi
         echo
-        echo ERROR:
+        echo "ERROR:"
         printf "$2"
-        printf "$3"
         exit
     fi
 }
@@ -142,11 +141,11 @@ if [ "$requires_sql" -eq 1 ]; then
       sqlhost="sql.mit.edu"
       sqluser=$lname
       . "/mit/scripts/sql/bin$scriptsdev/save-password"
-      checksqlpass 1 'The MySQL password that you typed appears to be incorrect.\n' ''
+      checksqlpass 1 'The MySQL password that you typed appears to be incorrect.\n'
       echo
       echo "OK.  Continuing with the install..."
   else
-      checksqlpass 0 'The MySQL login information in your .my.cnf file\n' 'appears to be incorrect.\n'
+      checksqlpass 0 'The MySQL login information in your .my.cnf file\nappears to be incorrect.\n'
   fi
 fi
 
