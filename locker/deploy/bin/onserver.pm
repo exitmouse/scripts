@@ -59,11 +59,11 @@ sub setup {
   if($requires_sql) {
     print "\nCreating SQL database for $sname...\n";
    
-    my $getpwd=`/mit/scripts/sql/bin$scriptsdev/get-password`;
+    my $getpwd=system("/mit/scripts/sql/bin$scriptsdev/get-password");
     ($sqlhost, $sqluser, $sqlpass) = split(/\s/, $getpwd);
     
-    $sqldb=`/mit/scripts/sql/bin$scriptsdev/get-next-database "$addrlast"`;
-    $sqldb=`/mit/scripts/sql/bin$scriptsdev/create-database "$sqldb"`;
+    $sqldb=system("/mit/scripts/sql/bin$scriptsdev/get-next-database", $addrlast);
+    $sqldb=system("/mit/scripts/sql/bin$scriptsdev/create-database", $sqldb);
     if($sqldb eq "") {
       print "\nERROR:\n";
       print "Your SQL account failed to create a SQL database.\n";
@@ -71,7 +71,8 @@ sub setup {
       print "your SQL account is at its database limit or its storage limit.\n";
       print "If you cannot determine the cause of the problem, please\n";
       print "feel free to contact sql\@mit.edu for assistance.\n";
-      `touch .failed`;
+      open FAILED, ">.failed";
+      close FAILED;
       exit 1;
     }
     $sqldbcurl = $sqldb;
@@ -79,8 +80,10 @@ sub setup {
   }
  
   if(-e "$HOME/web_scripts/$addrend/.admin") { 
-    $admin_password=`cat $HOME/web_scripts/$addrend/.admin`;
+    open ADMIN, "<$HOME/web_scripts/$addrend/.admin";
+    $admin_password=<ADMIN>;
     chomp($admin_password);
+    close ADMIN;
     unlink "$HOME/web_scripts/$addrend/.admin";
   } 
 
@@ -94,10 +97,6 @@ sub setup {
   $tarball =~ s|/deploydev/|/deploy/|;
   print VERSION dirname($tarball), "\n";
   close(VERSION);
-  if (0) {
-      `date > .scripts-version`;
-      `stat /mit/scripts/deploy$scriptsdev/$deploy.tar.gz >> .scripts-version`;
-  }
 
   select STDOUT;
   $| = 1; # STDOUT is *hot*!
