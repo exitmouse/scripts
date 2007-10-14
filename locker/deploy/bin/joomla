@@ -3,6 +3,7 @@ use strict;
 use lib '/mit/scripts/deploy/bin';
 use onserver;
 use Cwd;
+use File::Path;
 
 setup();
 
@@ -38,4 +39,4 @@ fetch_uri(
      filePerms => 0,
      dirPerms => 0});
 
-system('rm', '-rf', 'installation');
+rmtree('installation');

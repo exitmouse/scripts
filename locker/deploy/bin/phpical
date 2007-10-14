@@ -15,10 +15,10 @@ open(FILE, ">config.inc.php");
 print FILE $a;
 close(FILE);
 
-#`cp /mit/scripts/deploy/phpical/MIT\ Academic\ Calendar.ics calendars/`;
+#system('cp', '/mit/scripts/deploy/phpical/MIT Academic Calendar.ics', 'calendars/');
 
-`rm -f contemp.php`;
-`rm -f calendars/publish.ical.php`;
+unlink('contemp.php');
+unlink('calendars/publish.ical.php');
 
 print <<END;
 Your $sname Admin Panel is at

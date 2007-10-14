@@ -2,6 +2,7 @@
 use strict;
 use lib '/mit/scripts/deploy/bin';
 use onserver;
+use File::Path;
 
 setup();
 
@@ -26,4 +27,4 @@ fetch_uri(
      install_step => 1,
      cur_lang => 'english'});
 
-`rm -rf contrib install`;
+rmtree(['contrib', 'install']);

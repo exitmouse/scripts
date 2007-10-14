@@ -28,7 +28,7 @@ fetch_uri(
      username => $admin_username,
      password => $admin_password});
 
-`rm -r include/contemp.php`;
+unlink('include/contemp.php');
 
 print <<END;
 Your $sname Admin Panel is at
