@@ -6,13 +6,30 @@ use onserver;
 setup();
 
 `cp skins/common/images/mediawiki.png skins/common/images/wiki.png`;
+`patch -s -p1 < /mit/scripts/deploy/mediawiki.patch`;
 
 print "\nPlease decide upon a title for your wiki and enter it below.\n";
 print "Desired title: ";
 my $title=<STDIN>;
 chomp($title);
-totmp("-d \"Sitename=$title&EmergencyContact=$USER\@mit.edu&LanguageCode=en&DBserver=$sqlhost&DBname=$sqldbcurl&DBuser=$sqluser&DBpassword=$sqlpass&DBpassword2=$sqlpass&defaultEmail=$USER\@mit.edu&SysopName=$admin_username&SysopPass=$admin_password&SysopPass2=$admin_password\"");
-`curl -K $tmp http://$server/~$USER/$addrend/config/index.php`; 
-`patch -p1 < /mit/scripts/deploy/mediawiki.patch >/dev/null`;
+
+my $html = fetch_uri(
+    'config/index.php',
+    {},
+    {Sitename => $title,
+     EmergencyContact => "$USER\@mit.edu",
+     LanguageCode => 'en',
+     DBserver => $sqlhost,
+     DBname => $sqldb,
+     DBuser => $sqluser,
+     DBpassword => $sqlpass,
+     DBpassword2 => $sqlpass,
+     defaultEmail => "$USER\@mit.edu",
+     SysopName => $admin_username,
+     SysopPass => $admin_password,
+     SysopPass2 => $admin_password});
+unless ($html =~ /Installation successful/) {
+    print STDERR "ERROR: Automatic MediaWiki configuration failed.  You will need to configure\nyour MediaWiki manually, or email scripts\@mit.edu for help.\n";
+    exit;
+}
 `cp config/LocalSettings.php .`;
-`rm -rf contrib`;
