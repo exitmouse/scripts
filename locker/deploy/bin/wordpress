@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 use strict;
-use lib '/mit/scripts/deploydev/bin';
+use lib '/mit/scripts/deploy/bin';
 use onserver;
 
 setup();
