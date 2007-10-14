@@ -2,7 +2,7 @@
 
 checkfailed() {
   if [ -f "$lroot/web_scripts/$addrend/.failed" ]; then
-    rm -f $lroot/web_scripts/$addrend/.failed
+    rm -f "$lroot/web_scripts/$addrend/.failed"
     exit 1
   fi
 }
@@ -25,10 +25,10 @@ vsshrun() {
 }
 
 checksqlpass() {
-    errors=`sshrun 'sql/bin$scriptsdev/test-password'`
+    errors=`sshrun "sql/bin$scriptsdev/test-password"`
     if [ "$errors" != "" ]; then
         if [ "$1" -eq 1 ]; then
-          rm -f $lroot/.sql/my.cnf
+          rm -f "$lroot/.sql/my.cnf"
         fi
         echo
         echo ERROR:
@@ -47,27 +47,27 @@ exit
 fi
 
 echo 
-echo == Welcome to the scripts.mit.edu installer for $sname ==
+echo "== Welcome to the scripts.mit.edu installer for $sname =="
 echo
 
 echo "For documentation, including a link to the Athena rules of use,"
 echo "see <http://scripts.mit.edu/start>."
 echo
-echo Please report problems with this installer to scripts@mit.edu.
+echo "Please report problems with this installer to scripts@mit.edu."
 echo
-echo Are you performing this install for:
-echo 1. Your personal Athena account
-echo 2. A locker that you control \(a club, a course, etc\)
-echo If you do not understand this question, you should answer \'1\'.
+echo "Are you performing this install for:"
+echo "1. Your personal Athena account"
+echo "2. A locker that you control (a club, a course, etc)"
+echo "If you do not understand this question, you should answer '1'."
 printf "Please enter either '1' or '2' (without quotes): "
 read whofor
-if [ "$whofor" -eq 1 ]; then
+if [ "$whofor" = 1 ]; then
     lname=$USER
     lroot=$HOME 
-elif [ "$whofor" -eq 2 ]; then
+elif [ "$whofor" = 2 ]; then
     echo
-    echo OK.  $sname will be installed into a locker of your choice that
-    echo you control.  Please enter the name of the selected locker below.
+    echo "OK.  $sname will be installed into a locker of your choice that"
+    echo "you control.  Please enter the name of the selected locker below."
     echo "(For the locker /mit/lsc -- which has a full path of"
     echo "/afs/athena.mit.edu/activity/l/lsc -- you would simply enter lsc)."
     printf "Locker name: "
@@ -75,8 +75,8 @@ elif [ "$whofor" -eq 2 ]; then
     lroot="/mit/$lname" 
 else
     echo
-    echo ERROR:
-    echo You must select either '1' or '2'.
+    echo "ERROR:"
+    echo "You must select either '1' or '2'."
     exit 1
 fi
 
@@ -84,32 +84,32 @@ echo
 echo Checking the status of your scripts.mit.edu account...
 
 attach scripts 2>/dev/null
-. /mit/scripts/bin$scriptsdev/signup-web
+. "/mit/scripts/bin$scriptsdev/signup-web"
 
 echo
-echo Your new copy of $sname will appear on the web at a URL
-echo that starts with http://scripts.mit.edu/~$lname/
-echo Please decide upon a complete URL and enter it below.
-echo You must enter one or more characters after ~$lname/
-echo The completed address must only contain a-z, 0-9, and /.
+echo "Your new copy of $sname will appear on the web at a URL"
+echo "that starts with http://scripts.mit.edu/~$lname/"
+echo "Please decide upon a complete URL and enter it below."
+echo "You must enter one or more characters after ~$lname/"
+echo "The completed address must only contain a-z, 0-9, and /."
 printf "Desired address: http://scripts.mit.edu/~$lname/"
 read addrend
 
-addrend=`perl -e "\\\$temp = \"$addrend\"; \\\$temp .= \"/\" unless \\\$temp =~ /\\\\/$/; \\\$temp =~ /(^([a-z0-9A-Z\\\\/-]+)\$)/; print \\\$1"`
+addrend=`perl -0e 'print $ARGV[0] =~ /^([\w\/-]*[\w-])\/*$/' -- "$addrend"`
 if [ "$addrend" = "" ]; then
 	echo
-	echo ERROR:
-	echo You must enter one or more characters after ~$lname/
-	echo The completed address must only contain a-z, 0-9, and /.
+	echo "ERROR:"
+	echo "You must enter one or more characters after ~$lname/"
+	echo "The completed address must only contain a-z, 0-9, and /."
 	exit 1
 fi
 
 if [ -d "$lroot/web_scripts/$addrend" ]; then
     echo
-    echo ERROR:
-    echo You already have a directory corresponding to that web address.
-    echo Please remove that directory, choose a different address, or
-    echo contact scripts@mit.edu for assistance.
+    echo "ERROR:"
+    echo "You already have a directory corresponding to that web address."
+    echo "Please remove that directory, choose a different address, or"
+    echo "contact scripts@mit.edu for assistance."
     exit 1
 fi
 
@@ -118,22 +118,22 @@ if [ "$requires_sql" = "" ]; then
 fi
 
 if [ ! -f "$lroot/.my.cnf" ]; then
-  mkdir $lroot/.sql 2>/dev/null
-  fs sa $lroot/.sql daemon.scripts write
-  fs sa $lroot/.sql daemon.sql write
-  ln -nfs $lroot/.sql/my.cnf $lroot/.my.cnf 2>/dev/null
+  mkdir "$lroot/.sql" 2>/dev/null
+  fs sa "$lroot/.sql" daemon.scripts write
+  fs sa "$lroot/.sql" daemon.sql write
+  ln -nfs "$lroot/.sql/my.cnf" "$lroot/.my.cnf" 2>/dev/null
 fi
 
-fs sa $lroot/.sql system:anyuser none
-fs sa $lroot/.sql system:authuser none
+fs sa "$lroot/.sql" system:anyuser none
+fs sa "$lroot/.sql" system:authuser none
 
 if [ "$requires_sql" -eq 1 ]; then
   sqlinfo=`sshrun "sql/bin$scriptsdev/get-password"`
   if [ "$sqlinfo" = "" ]; then
       echo 
-      echo You already have a MySQL account but you do not have a .my.cnf file.
-      echo If you do not remember your MySQL account password, you can change it
-      echo at http://sql.mit.edu using MIT certificates. 
+      echo "You already have a MySQL account but you do not have a .my.cnf file."
+      echo "If you do not remember your MySQL account password, you can change it"
+      echo "at http://sql.mit.edu using MIT certificates."
       printf "Please type your MySQL password and press [enter]: "
       stty -echo
       read sqlpass
@@ -141,10 +141,10 @@ if [ "$requires_sql" -eq 1 ]; then
       echo
       sqlhost="sql.mit.edu"
       sqluser=$lname
-      . /mit/scripts/sql/bin$scriptsdev/save-password
+      . "/mit/scripts/sql/bin$scriptsdev/save-password"
       checksqlpass 1 'The MySQL password that you typed appears to be incorrect.\n' ''
       echo
-      echo OK.  Continuing with the install...
+      echo "OK.  Continuing with the install..."
   else
       checksqlpass 0 'The MySQL login information in your .my.cnf file\n' 'appears to be incorrect.\n'
   fi
@@ -160,17 +160,17 @@ fi
 
 if [ "$prompt_username" -eq 1 ]; then
     echo
-    echo You will be able to log in to $sname using a username of your choice.
-    echo Please decide upon a username and enter it below.
+    echo "You will be able to log in to $sname using a username of your choice."
+    echo "Please decide upon a username and enter it below."
     echo "Your username must contain only alphanumeric characters (a-z, 0-9)."
     printf "Desired username: "
     read admin_username
-    admin_username=`perl -e "\\\$temp = \"$admin_username\"; \\\$temp =~ /(^([a-z0-9A-Z]+)\\\$)/; print \\\$1;"`
+    admin_username=`perl -0e 'print $ARGV[0] =~ /^([[:alnum:]]+)$/' -- "$admin_username"`
     if [ "$admin_username" = "" ]; then
         echo
         echo ERROR:
         echo "Your username must contain only alphanumeric characters (a-z, 0-9)."
-        echo You will need to run the installer again and choose a different username.
+        echo "You will need to run the installer again and choose a different username."
         exit 1
     fi
 fi
@@ -191,7 +191,7 @@ fs sa . system:scripts-security-upd write
 
 if [ "$prompt_password" -eq 1 ]; then
     stty -echo
-    sshrun "deploy$scriptsdev/bin/prompt-password '$sname' '$deploy' '$addrend' '$admin_username'"
+    sshrun "deploy$scriptsdev/bin/prompt-password" "$sname" "$deploy" "$addrend" "$admin_username"
     stty echo
 fi
 
@@ -215,24 +215,24 @@ files=`athrun scripts gfind . -mindepth 1 -maxdepth 1 | grep -v .admin`
 numfiles=`echo "$files" | wc -l`
 if [ "$numfiles" -eq 1 ]; then
     athrun scripts gfind . -mindepth 2 -maxdepth 2 | xargs -i mv \{} .
-    rmdir $files
+    rmdir "$files"
 fi
 if [ -f "/mit/scripts/deploy$scriptsdev/php.ini/$deploy" ]; then
-	nodot=`echo $lname | sed "/\./s///"`;
-	sed -e /SCRIPTS_USER/s//$lname/ -e /SCRIPTS_NODOT/s//$nodot/ /mit/scripts/deploy$scriptsdev/php.ini/$deploy > php.ini
+	nodot=`echo "$lname" | sed "/\./s///"`;
+	sed -e "/SCRIPTS_USER/ s//$lname/" -e "/SCRIPTS_NODOT/ s//$nodot/" "/mit/scripts/deploy$scriptsdev/php.ini/$deploy" > php.ini
 	athrun scripts gfind . -mindepth 1 -type d -exec sh -c 'ln -sf "`echo "$1" | sed '\''s,[^/],,g; s,/,../,g'\''`php.ini" "$1/"' -- {} \;
 fi
-cd $origdir
+cd "$origdir"
 
-vsshrun "deploy$scriptsdev/bin/$deploy '$sname' '$deploy' '$addrend' '$admin_username' '$requires_sql' '$scriptsdev' '$USER'" || die "Unknown failure during configuration"
-rm -f /$lroot/web_scripts/$addrend/.scripts-tmp
+vsshrun "deploy$scriptsdev/bin/$deploy" "$sname" "$deploy" "$addrend" "$admin_username" "$requires_sql" "$scriptsdev" "$USER" || die "Unknown failure during configuration"
+rm -f "$lroot/web_scripts/$addrend/.scripts-tmp"
 checkfailed
 
 echo
-echo == Installation complete! ==
-echo You should now be able to access your new copy of $sname at
-echo http://scripts.mit.edu/~$lname/$addrend
+echo "== Installation complete! =="
+echo "You should now be able to access your new copy of $sname at"
+echo "http://scripts.mit.edu/~$lname/$addrend/"
 echo "(You can replace the http with https if you want to use encryption)"
-echo If you have trouble accessing it, feel free to contact
-echo the scripts.mit.edu team by e-mailing scripts@mit.edu
+echo "If you have trouble accessing it, feel free to contact"
+echo "the scripts.mit.edu team by e-mailing scripts@mit.edu"
 exit 0
