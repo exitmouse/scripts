@@ -10,12 +10,36 @@ print "Desired title: ";
 my $title = <STDIN>;
 chomp($title);
 
-totmp("-d \"DBhostname=$sqlhost&DBuserName=$sqluser&DBpassword=$sqlpass&DBDel=0&DBname=$sqldbcurl&DBPrefix=jos_&DBSample=1\""); 
-`curl -K $tmp http://$server/~$USER/$addrend/installation/install2.php 2>/dev/null`;
+fetch_uri(
+    'installation/install2.php',
+    {},
+    {DBhostname => $sqlhost,
+     DBuserName => $sqluser,
+     DBpassword => $sqlpass,
+     DBDel => 0,
+     DBname => $sqldb,
+     DBPrefix => 'jos_',
+     DBSample => 1});
 
 my $pwd = `pwd`;
 chomp($pwd);
-totmp("-d \"DBhostname=$sqlhost&DBuserName=$sqluser&DBpassword=$sqlpass&DBname=$sqldbcurl&DBPrefix=jos_&sitename=$title&siteUrl=http://$server/~$USER/$addrend&absolutePath=$pwd&adminEmail=$human%40mit.edu&adminPassword=$admin_password&filePerms=0&dirPerms=0\"");
-`curl -K $tmp http://$server/~$USER/$addrend/installation/install4.php 2>/dev/null`;
+
+print "=== $base_uri ===\n";
+    
+fetch_uri(
+    'installation/install4.php',
+    {},
+    {DBhostname => $sqlhost,
+     DBuserName => $sqluser,
+     DBpassword => $sqlpass,
+     DBname => $sqldb,
+     DBPrefix => 'jos_',
+     sitename => $title,
+     siteUrl => $base_uri,
+     absolutePath => $pwd,
+     adminEmail => "$human\@mit.edu",
+     adminPassword => $admin_password,
+     filePerms => 0,
+     dirPerms => 0});
 
 `rm -rf installation`;

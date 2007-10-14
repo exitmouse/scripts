@@ -5,14 +5,37 @@ use onserver;
 
 setup();
 
-totmp("-d \"server=$sqlhost&name=$sqluser&password=$sqlpass&db=$sqldbcurl&prefix=e107_&stage=3\""); 
-my $preva=`curl -K $tmp http://$server/~$USER/$addrend/install.php 2>/dev/null | grep previous_steps | cut -d "'" -f 6`;
+my ($preva) = fetch_uri(
+    'install.php',
+    {},
+    {server => $sqlhost,
+     name => $sqluser,
+     password => $sqlpass,
+     db => $sqldb,
+     prefix => 'e107_',
+     stage => 3}) =~ /name='previous_steps' value='(.*)'/;
 
-my $prevb=`curl -d "stage=4&previous_steps=$preva" http://$server/~$USER/$addrend/install.php 2>/dev/null | grep previous_steps | cut -d "'" -f 6`;
+my ($prevb) = fetch_uri(
+    'install.php',
+    {},
+    {stage => 4,
+     previous_steps => $preva}) =~ /name='previous_steps' value='(.*)'/;
 
-totmp("-d \"u_name=$admin_username&d_name=$admin_username&pass1=$admin_password&pass2=$admin_password&email=$human\@mit.edu&stage=6&previous_steps=$prevb\"");
-my $prevc=`curl -K $tmp http://$server/~$USER/$addrend/install.php 2>/dev/null | grep previous_steps | cut -d "'" -f 6`;
+my ($prevc) = fetch_uri(
+    'install.php',
+    {},
+    {u_name => $admin_username,
+     d_name => $admin_username,
+     pass1 => $admin_password,
+     pass2 => $admin_password,
+     email => "$human\@mit.edu",
+     stage => 6,
+     previous_steps => $prevb}) =~ /name='previous_steps' value='(.*)'/;
 
-`curl -d "stage=7&previous_steps=$prevc" http://$server/~$USER/$addrend/install.php >/dev/null 2>/dev/null`;
+fetch_uri(
+    'install.php',
+    {},
+    {stage => "7",
+     previous_steps => $prevc});
 
-`rm -rf install.php`;
+unlink 'install.php';

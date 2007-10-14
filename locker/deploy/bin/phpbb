@@ -5,7 +5,25 @@ use onserver;
 
 setup();
 
-totmp("-d \"lang=english&dbms=mysql4&upgrade=0&dbhost=$sqlhost&dbuser=$sqluser&dbname=$sqldbcurl&dbpasswd=$sqlpass&prefix=&board_email=$human\@mit.edu&server_name=$server&server_port=80&script_path=/~$USER/$addrend/&admin_name=$admin_username&admin_pass1=$admin_password&admin_pass2=$admin_password&install_step=1&cur_lang=english\"");
-`curl -K $tmp http://$server/~$USER/$addrend/install/install.php 2>/dev/null`;
+fetch_uri(
+    'install/install.php',
+    {},
+    {lang => 'english',
+     dbms => 'mysql4',
+     upgrade => 0,
+     dbhost => $sqlhost,
+     dbuser => $sqluser,
+     dbname => $sqldb,
+     dbpasswd => $sqlpass,
+     prefix => '',
+     board_email => "$human\@mit.edu",
+     server_name => $server,
+     server_port => 80,
+     script_path => "/~$USER/$addrend/",
+     admin_name => $admin_username,
+     admin_pass1 => $admin_password,
+     admin_pass2 => $admin_password,
+     install_step => 1,
+     cur_lang => 'english'});
 
 `rm -rf contrib install`;

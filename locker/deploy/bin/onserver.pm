@@ -10,11 +10,11 @@ use POSIX qw(strftime);
 use LWP::UserAgent;
 use URI;
 our @ISA = qw(Exporter);
-our @EXPORT = qw(setup totmp fetch_uri print_login_info press_enter $server $tmp $USER $HOME $sname $deploy $addrend $admin_username $requires_sql $addrlast $sqlhost $sqluser $sqlpass $sqldb $sqldbcurl $admin_password $scriptsdev $human);
+our @EXPORT = qw(setup totmp fetch_uri print_login_info press_enter $server $tmp $USER $HOME $sname $deploy $addrend $base_uri $ua $admin_username $requires_sql $addrlast $sqlhost $sqluser $sqlpass $sqldb $sqldbcurl $admin_password $scriptsdev $human);
 
 our $server = "scripts.mit.edu";
 
-our ($tmp, $USER, $HOME, $sname, $deploy, $addrend, $admin_username, $requires_sql, $addrlast, $sqlhost, $sqluser, $sqlpass, $sqldb, $sqldbcurl, $admin_password, $scriptsdev, $human);
+our ($tmp, $USER, $HOME, $sname, $deploy, $addrend, $base_uri, $ua, $admin_username, $requires_sql, $addrlast, $sqlhost, $sqluser, $sqlpass, $sqldb, $sqldbcurl, $admin_password, $scriptsdev, $human);
 
 $tmp = ".scripts-tmp";
 sub totmp {
@@ -23,8 +23,7 @@ sub totmp {
   close(FILE);
 }
 
-my $ua = LWP::UserAgent->new;
-my $base_uri;
+$ua = LWP::UserAgent->new;
 
 sub fetch_uri {
     my ($uri, $get, $post) = @_;

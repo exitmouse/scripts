@@ -17,12 +17,16 @@ open(FILE, ">include/config.inc.php");
 print FILE $a;
 close(FILE);
 
-`curl http://$server/~$USER/$addrend/install.php\?action=step_2 2>/dev/null`;
-`curl http://$server/~$USER/$addrend/install.php\?action=step_3 2>/dev/null`;
-`curl http://$server/~$USER/$addrend/install.php\?action=step_4 2>/dev/null`;
+fetch_uri('install.php', {action => 'step_2'});
+fetch_uri('install.php', {action => 'step_3'});
+fetch_uri('install.php', {action => 'step_4'});
 
-totmp("-d \"action=step_6&username=$admin_username&password=$admin_password\""); 
-`curl -K $tmp http://$server/~$USER/$addrend/install.php\?action=step_6 2>/dev/null`;
+fetch_uri(
+    'install.php',
+    {action => 'step_6'},
+    {action => 'step_6',
+     username => $admin_username,
+     password => $admin_password});
 
 `rm -r include/contemp.php`;
 

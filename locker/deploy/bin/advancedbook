@@ -28,5 +28,11 @@ open(FILE, ">install.php");
 print FILE $a;
 close(FILE);
 
-totmp("-d \"action=Create%20table&db=$sqldbcurl&host=$sqlhost&name=$sqluser&pass=$sqlpass\"");
-`curl -K $tmp http://$server/~$USER/$addrend/install.php 2>/dev/null`;
+fetch_uri(
+    'install.php',
+    {},
+    {action => 'Create table',
+     db => $sqldb,
+     host => $sqlhost,
+     name => $sqluser,
+     pass => $sqlpass});
