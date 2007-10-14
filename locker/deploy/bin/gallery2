@@ -2,33 +2,60 @@
 use strict;
 use lib '/mit/scripts/deploy/bin';
 use onserver;
+use File::Path
 
 setup();
 
-`rm -rf $HOME/scripts-gallery2/$sqldb`;
-`mkdir -p $HOME/scripts-gallery2/$sqldb`;
+my $dir = "/mit/$USER/scripts-gallery2/$sqldb";
+if (-e $dir) {
+    print STDERR "ERROR: The directory $dir already exists.\nTry selecting a different name.";
+    exit 1;
+}
+mkpath($dir);
 
-`patch install/steps/AuthenticateStep.class /mit/scripts/deploy/gallery2.patch`;
+system('patch', 'install/steps/AuthenticateStep.class',
+       '/mit/scripts/deploy/gallery2.patch');
 
-`curl -c .cookies http://scripts.mit.edu/~$USER/$addrend/install/index.php 2>/dev/null`;
-`curl -b .cookies -d "language=en_US" http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=1 2>/dev/null`;
-`curl -b .cookies -d "" http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=2 2>/dev/null`;
-`curl -b .cookies -d "" http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=3 2>/dev/null`;
-`curl -b .cookies -d "isMultisite=0&dir=/mit/$USER/scripts-gallery2/$sqldbcurl&action=save" http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=4 2>/dev/null`;
-`curl -b .cookies -d "isMultisite=0&dir=/mit/$USER/scripts-gallery2/$sqldbcurl&action=save" http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=4 2>/dev/null`;
+$ua->cookie_jar({file => '.cookies'});
 
-totmp("-d \"type=mysql&hostname=$sqlhost&action=save&confirmReuseTables=&confirmCleanInstall=&username=$sqluser&password=$sqlpass&database=$sqldbcurl&tablePrefix=g2_&columnPrefix=g_\"");
+fetch_uri('install/index.php');
+fetch_uri('install/index.php', {step => 1},
+	  {language => 'en_US'});
+fetch_uri('install/index.php', {step => 2}, {});
+fetch_uri('install/index.php', {step => 3}, {});
 
-`curl -b .cookies -K $tmp http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=5 2>/dev/null`;
-`curl -b .cookies -K $tmp http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=5 2>/dev/null`;
+my $post4 = {isMultisite => 0,
+	    dir => $dir,
+	    action => 'save'};
+fetch_uri('install/index.php', {step => 4}, $post4);
+fetch_uri('install/index.php', {step => 4}, $post4);
 
-totmp("-d \"adminName=$admin_username&passwordA=$admin_password&action=create&passwordB=$admin_password&email=$human\@mit.edu&fullName=$USER\"");
+my $post5 = {type => 'mysql',
+	     hostname => $sqlhost,
+	     action => 'save',
+	     confirmReuseTables => '',
+	     confirmCleanInstall => '',
+	     username => $sqluser,
+	     password => $sqlpass,
+	     database => $sqldb,
+	     tablePrefix => 'g2_',
+	     columnPrefix => 'g_'};
+fetch_uri('install/index.php', {step => 5}, $post5);
+fetch_uri('install/index.php', {step => 5}, $post5);
 
-`curl -b .cookies -K $tmp http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=6 2>/dev/null`;
-`curl -b .cookies -d "" http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=7 2>/dev/null`;
-`curl -b .cookies -d "" http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=8 2>/dev/null`;
-`curl -b .cookies -d "module[imagemagick]=on&activate=1" http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=9 2>/dev/null`;
-`curl -b .cookies -d "" http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=10 2>/dev/null`;
-`curl -b .cookies -d "" http://scripts.mit.edu/~$USER/$addrend/install/index.php?step=11 2>/dev/null`;
+fetch_uri('install/index.php', {step => 6},
+	  {adminName => $admin_username,
+	   passwordA => $admin_password,
+	   action => 'create',
+	   passwordB => $admin_password,
+	   email => "$human\@mit.edu",
+	   fullName => $USER});
+fetch_uri('install/index.php', {step => 7}, {});
+fetch_uri('install/index.php', {step => 8}, {});
+fetch_uri('install/index.php', {step => 9},
+	  {'module[imagemagick]' => 'on',
+	   activate => 1});
+fetch_uri('install/index.php', {step => 10}, {});
+fetch_uri('install/index.php', {step => 11}, {});
 
-unlink ".cookies";
+unlink '.cookies';

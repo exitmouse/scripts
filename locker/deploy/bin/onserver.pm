@@ -24,6 +24,7 @@ sub totmp {
 }
 
 $ua = LWP::UserAgent->new;
+push @{$ua->requests_redirectable}, 'POST';
 
 sub fetch_uri {
     my ($uri, $get, $post) = @_;
