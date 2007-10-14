@@ -1,14 +1,32 @@
 #!/usr/bin/perl
 use strict;
-use lib '/mit/scripts/deploy/bin';
+use lib '/mit/scripts/deploydev/bin';
 use onserver;
 
 setup();
 
-totmp("-d \"dbhost=$sqlhost&uname=$sqluser&dbname=$sqldbcurl&pwd=$sqlpass&prefix=&submit=Submit&step=2\"");
-`curl -K $tmp http://$server/~$USER/$addrend/wp-admin/setup-config.php?step=2 2>/dev/null`;
+fetch_uri(
+    'wp-admin/setup-config.php',
+    {step => 2},
+    {dbhost => $sqlhost,
+     uname => $sqluser,
+     dbname => $sqldb,
+     pwd => $sqlpass,
+     prefix => '',
+     submit => 'Submit',
+     step => 2});
 
-$admin_password=`curl -d "weblog_title=My+Blog&admin_email=$human\@mit.edu&submit=Continue&step=2" http://$server/~$USER/$addrend/wp-admin/install.php?step=2 2>/dev/null | grep '<dd><code>' | tail -n1 | cut -d\\> -f3 | cut -d\\< -f1`;
+my $html = fetch_uri(
+    'wp-admin/install.php',
+    {step => 2},
+    {weblog_title => 'My Blog',
+     admin_email => "$human\@mit.edu",
+     submit => 'Continue',
+     step => 2});
+while ($html =~ /<dd><code>(.*)<\/code><\/dd>/g) {
+    $admin_username = $admin_password;
+    $admin_password = $1;
+}
 
 print_login_info();
 print "You will also receive this login information at your MIT email address.\n";
