@@ -37,6 +37,7 @@ checksqlpass() {
     fi
 }
 
+override=1
 if [ "$override" = "" ]; then
 echo "The scripts.mit.edu automatic installers are currently unavailable."
 echo "We hope to make them available again soon."
