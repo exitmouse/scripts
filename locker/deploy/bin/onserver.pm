@@ -90,11 +90,15 @@ sub setup {
   if($requires_sql) {
     print "\nCreating SQL database for $sname...\n";
    
-    my $getpwd=system("/mit/scripts/sql/bin$scriptsdev/get-password");
-    ($sqlhost, $sqluser, $sqlpass) = split(/\s/, $getpwd);
-    
-    $sqldb=system("/mit/scripts/sql/bin$scriptsdev/get-next-database", $addrlast);
-    $sqldb=system("/mit/scripts/sql/bin$scriptsdev/create-database", $sqldb);
+    open GETPWD, '-|', "/mit/scripts/sql/bin$scriptsdev/get-password";
+    ($sqlhost, $sqluser, $sqlpass) = split(/\s/, <GETPWD>);
+    close GETPWD;
+    open SQLDB, '-|', "/mit/scripts/sql/bin$scriptsdev/get-next-database", $addrlast;
+    $sqldb = <SQLDB>;
+    close SQLDB;
+    open SQLDB, '-|', "/mit/scripts/sql/bin$scriptsdev/create-database", $sqldb;
+    $sqldb = <SQLDB>;
+    close SQLDB;
     if($sqldb eq "") {
       print "\nERROR:\n";
       print "Your SQL account failed to create a SQL database.\n";
