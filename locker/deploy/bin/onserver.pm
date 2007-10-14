@@ -7,8 +7,10 @@ use File::Basename;
 use Socket;
 use Cwd qw(abs_path);
 use POSIX qw(strftime);
+use LWP::UserAgent;
+use URI;
 our @ISA = qw(Exporter);
-our @EXPORT = qw(setup totmp print_login_info press_enter $server $tmp $USER $HOME $sname $deploy $addrend $admin_username $requires_sql $addrlast $sqlhost $sqluser $sqlpass $sqldb $sqldbcurl $admin_password $scriptsdev $human);
+our @EXPORT = qw(setup totmp fetch_uri print_login_info press_enter $server $tmp $USER $HOME $sname $deploy $addrend $admin_username $requires_sql $addrlast $sqlhost $sqluser $sqlpass $sqldb $sqldbcurl $admin_password $scriptsdev $human);
 
 our $server = "scripts.mit.edu";
 
@@ -19,6 +21,33 @@ sub totmp {
   open(FILE, ">$tmp");
   print FILE $_[0];
   close(FILE);
+}
+
+my $ua = LWP::UserAgent->new;
+my $base_uri;
+
+sub fetch_uri {
+    my ($uri, $get, $post) = @_;
+    my $u = URI->new($uri);
+    my $req;
+    if (defined $post) {
+	$u->query_form($post);
+	my $content = $u->query;
+	$u->query_form($get);
+	$req = HTTP::Request->new(POST => $u->abs($base_uri));
+	$req->content_type('application/x-www-form-urlencoded');
+	$req->content($content);
+    } else {
+	$u->query_form($get) if (defined $get);
+	$req = HTTP::Request->new(GET => $u->abs($base_uri));
+    }
+    my $res = $ua->request($req);
+    if ($res->is_success) {
+	return $res->content;
+    } else {
+	print STDERR "Error fetching configuration page: ", $res->status_line, "\n";
+	return undef;
+    }
 }
 
 sub print_login_info {
@@ -55,6 +84,8 @@ sub setup {
     $addrend = $1;
   }
   ($addrlast) = ($addrend =~ /([^\/]*)$/);
+  
+  $base_uri = "http://$server/~$USER/$addrend/";
   
   if($requires_sql) {
     print "\nCreating SQL database for $sname...\n";
@@ -101,3 +132,5 @@ sub setup {
   select STDOUT;
   $| = 1; # STDOUT is *hot*!
 }
+
+1;
