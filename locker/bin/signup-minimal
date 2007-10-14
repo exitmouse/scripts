@@ -11,27 +11,27 @@ fi
 if [ "$lname" = "" ]; then
   if [ "$1" = "" ]; then
     echo
-    echo Would you like to sign up:
-    echo 1. Your personal Athena account
-    echo 2. A locker that you control \(a club, a course, etc\)
-    echo If you do not understand this question, you should answer \'1\'.
+    echo "Would you like to sign up:"
+    echo "1. Your personal Athena account"
+    echo "2. A locker that you control (a club, a course, etc)"
+    echo "If you do not understand this question, you should answer '1'."
     printf "Please enter either '1' or '2' (without quotes): "
     read whofor
-    if [ "$whofor" -eq 1 ]; then
+    if [ "$whofor" = 1 ]; then
         lname=$USER
         lroot=$HOME
-    elif [ "$whofor" -eq 2 ]; then
+    elif [ "$whofor" = 2 ]; then
         echo
-        echo OK.  A locker of your choice that you control will be signed up.
-        echo Please enter the name of the selected locker below.
+        echo "OK.  A locker of your choice that you control will be signed up."
+        echo "Please enter the name of the selected locker below."
         echo "(For the locker /mit/sipb, you would enter sipb)."
         printf "Locker name: "
         read lname
         lroot="/mit/$lname"
     else
         echo
-        echo ERROR:
-        echo You must select either '1' or '2'.
+        echo "ERROR:"
+        echo "You must select either '1' or '2'."
         exit 1
     fi
   else
@@ -39,64 +39,70 @@ if [ "$lname" = "" ]; then
   fi
 fi
 
-attach $lname 2>/dev/null
+attach "$lname" 2>/dev/null
 
 if [ "$lname" != "$USER" ]; then
   temp=$lname
   lname=$USER
-  . /mit/scripts/bin$scriptsdev/signup-minimal
+  . "/mit/scripts/bin$scriptsdev/signup-minimal"
   lname=$temp
 
   ans=`athrun scripts scripts-ssh /usr/local/bin/admof "$lname" "$USER@ATHENA.MIT.EDU"` 
   if [ "$ans" != "yes" ]; then
     echo
-    echo ERROR:
-    printf "It appears as though you are not an administrator of the locker <$lname>.\n"
-    echo Try running \"fs sa /mit/$lname $USER all\" and starting over.
-    echo Contact scripts@mit.edu if you are unable to solve the problem.
+    echo "ERROR:"
+    echo "It appears as though you are not an administrator of the locker <$lname>."
+    echo "Try running \"fs sa /mit/$lname $USER all\" and starting over."
+    echo "Contact scripts@mit.edu if you are unable to solve the problem."
     exit 0
   fi
 fi
 
-attach $lname 2>/dev/null
+attach "$lname" 2>/dev/null
 
 if [ ! -d "/mit/$lname" ]; then
   echo
-  echo ERROR:
-  printf "Cannot find locker <$lname>."
+  echo "ERROR:"
+  echo "Cannot find locker <$lname>."
   exit 0
 fi
 
-ans=`fs la /mit/$lname | grep "system:a.*user.*l" | wc -l`
-if [ "$ans" -eq 0 ]; then
+ans=`fs la "/mit/$lname" | grep '^  system:a[nyuth]*user .*l'`
+if [ -z "$ans" ]; then
   echo
-  echo ERROR:
-  printf "It appears as though the locker <$lname> is not listable by system:anyuser.\n"
-  printf "You might want to run \"fs sa /mit/$lname system:anyuser l\"\n"
-  printf "(that's a lowercase L rather than a one) and then try again.\n"
-  echo Contact scripts@mit.edu if you are unable to solve the problem.
+  echo "ERROR:"
+  echo "It appears as though the locker <$lname> is not listable by system:anyuser."
+  echo "You might want to run \"fs sa /mit/$lname system:anyuser l\""
+  echo "(that's a lowercase L rather than a one) and then try again."
+  echo "Contact scripts@mit.edu if you are unable to solve the problem."
   exit 0
 fi
 
-mkdir /mit/$lname/.scripts-signup 2>/dev/null
+mkdir "/mit/$lname/.scripts-signup" 2>/dev/null
 
 if [ ! -d "/mit/$lname/.scripts-signup" ]; then
   echo
-  echo ERROR:
-  printf "It appears as though you do not have write access to the locker <$lname>.\n"
-  echo Contact scripts@mit.edu if you are unable to solve the problem.
+  echo "ERROR:"
+  echo "It appears as though you do not have write access to the locker <$lname>."
+  echo "Contact scripts@mit.edu if you are unable to solve the problem."
   exit 0
 fi
 
-athrun gnu wget -q -O/dev/null http://scripts.mit.edu/~signup/$lname
-rmdir /mit/$lname/.scripts-signup
+if type wget >/dev/null 2>/dev/null; then
+  WGET=wget
+else
+  WGET="athrun gnu wget"
+fi
+
+$WGET -q -O/dev/null "http://scripts.mit.edu/~signup/$lname"
+rmdir "/mit/$lname/.scripts-signup"
 
 success() {
   if [ "$initlname" -eq 0 ]; then
     echo
     echo "== SUCCESS =="
-    echo $lname is now signed up for $1.
-    echo $2
+    echo "$lname is now signed up for $1."
+    echo "$2"
     echo
   fi
 }

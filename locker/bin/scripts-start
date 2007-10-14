@@ -3,38 +3,38 @@
 echo
 echo "What piece of software would you like to install?"
 echo
-echo 1. MediaWiki
-echo 2. WordPress
-echo 3. Joomla
-echo 4. e107
-echo 5. Gallery2
-echo 6. phpBB
-echo 7. Advanced Guest Book
-echo 8. PHP iCalendar
+echo "1. MediaWiki"
+echo "2. WordPress"
+echo "3. Joomla"
+echo "4. e107"
+echo "5. Gallery2"
+echo "6. phpBB"
+echo "7. Advanced Guest Book"
+echo "8. PHP iCalendar"
 echo
 printf "Please enter a number 1-8: "
 read num
 echo
 
 attach scripts 2>/dev/null
-if [ "$num" -eq 1 ]; then
-  . /mit/scripts/bin$scriptsdev/scripts-mediawiki
-elif [ "$num" -eq 2 ]; then
-  . /mit/scripts/bin$scriptsdev/scripts-wordpress
-elif [ "$num" -eq 3 ]; then
-  . /mit/scripts/bin$scriptsdev/scripts-joomla
-elif [ "$num" -eq 4 ]; then
-  . /mit/scripts/bin$scriptsdev/scripts-e107
-elif [ "$num" -eq 5 ]; then
-  . /mit/scripts/bin$scriptsdev/scripts-gallery2
-elif [ "$num" -eq 6 ]; then
-  . /mit/scripts/bin$scriptsdev/scripts-phpbb
-elif [ "$num" -eq 7 ]; then
-  . /mit/scripts/bin$scriptsdev/scripts-advancedbook
-elif [ "$num" -eq 8 ]; then
-  . /mit/scripts/bin$scriptsdev/scripts-phpical
+if [ "$num" = 1 ]; then
+  . "/mit/scripts/bin$scriptsdev/scripts-mediawiki"
+elif [ "$num" = 2 ]; then
+  . "/mit/scripts/bin$scriptsdev/scripts-wordpress"
+elif [ "$num" = 3 ]; then
+  . "/mit/scripts/bin$scriptsdev/scripts-joomla"
+elif [ "$num" = 4 ]; then
+  . "/mit/scripts/bin$scriptsdev/scripts-e107"
+elif [ "$num" = 5 ]; then
+  . "/mit/scripts/bin$scriptsdev/scripts-gallery2"
+elif [ "$num" = 6 ]; then
+  . "/mit/scripts/bin$scriptsdev/scripts-phpbb"
+elif [ "$num" = 7 ]; then
+  . "/mit/scripts/bin$scriptsdev/scripts-advancedbook"
+elif [ "$num" = 8 ]; then
+  . "/mit/scripts/bin$scriptsdev/scripts-phpical"
 else
-  echo ERROR:
-  echo You must enter a number 1 through 8.
+  echo "ERROR:"
+  echo "You must enter a number 1 through 8."
   exit 1
 fi
