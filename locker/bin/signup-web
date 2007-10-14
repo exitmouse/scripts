@@ -1,14 +1,14 @@
 #!/bin/sh
 
 attach -q scripts
-. /mit/scripts/bin$scriptsdev/signup-minimal
+. "/mit/scripts/bin$scriptsdev/signup-minimal"
 
 if [ ! -d "/mit/$lname/web_scripts/" ]; then
-    mkdir -p /mit/$lname/web_scripts
-    fs sa /mit/$lname/web_scripts system:anyuser l
-    fs sa /mit/$lname/web_scripts system:authuser none
-    fs sa /mit/$lname/web_scripts system:scripts-security-upd rl
-    fs sa /mit/$lname/web_scripts daemon.scripts write
+    mkdir -p "/mit/$lname/web_scripts"
+    fs sa "/mit/$lname/web_scripts" system:anyuser l
+    fs sa "/mit/$lname/web_scripts" system:authuser none
+    fs sa "/mit/$lname/web_scripts" system:scripts-security-upd rl
+    fs sa "/mit/$lname/web_scripts" daemon.scripts write
     success "the web script service" "The directory /mit/$lname/web_scripts has been created."
 else 
     success "the web script service" "The directory /mit/$lname/web_scripts already exists."

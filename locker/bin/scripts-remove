@@ -1,10 +1,10 @@
 #!/bin/bash
 
 if [ "$scriptsdev" != "" -a "$scriptsdev" != "dev" ]; then 
-    echo ERROR:
-    echo The \$scriptsdev variable is set to an invalid value.
-    echo \(The variable should not be set.\)
-    echo Please contact scripts@mit.edu.
+    echo "ERROR:"
+    echo "The \$scriptsdev variable is set to an invalid value."
+    echo "(The variable should not be set.)"
+    echo "Please contact scripts@mit.edu."
 fi
 
 sshrun() {
@@ -18,65 +18,64 @@ checksqlpass() {
           rm -f "$lroot/.sql/my.cnf"
         fi
         echo
-        echo ERROR:
+        echo "ERROR:"
         printf "$2"
-        printf "$3"
         exit 1
     fi
 }
 attach scripts sql 2>/dev/null
 
-echo Welcome to the scripts.mit.edu uninstaller. This program will
-echo help you cleanly remove software that you have auto-installed.
+echo "Welcome to the scripts.mit.edu uninstaller. This program will"
+echo "help you cleanly remove software that you have auto-installed."
 echo
-echo Are you removing an installation from:
-echo 1. Your personal Athena account
-echo 2. A locker that you control \(a club, a course, etc.\)
-echo If you do not understand this question, you should answer 1.
+echo "Are you removing an installation from:"
+echo "1. Your personal Athena account"
+echo "2. A locker that you control (a club, a course, etc.)"
+echo "If you do not understand this question, you should answer 1."
 printf "Please enter either 1 or 2: "
 read whofor
-if [ "$whofor" -eq 1 ]; then
+if [ "$whofor" = 1 ]; then
     lname=$USER
     lroot=$HOME
-elif [ "$whofor" -eq 2 ]; then
+elif [ "$whofor" = 2 ]; then
     echo
-    echo Please enter the name of the selected locker below.
+    echo "Please enter the name of the selected locker below."
     echo "(For the locker /mit/sipb, you would enter sipb.)"
     read lname
     lroot="/mit/$lname"
 else
     echo
-    echo ERROR:
-    echo You must select either 1 or 2.
+    echo "ERROR:"
+    echo "You must select either 1 or 2."
     exit 1
 fi
 attach "$lname" 2>/dev/null
 
 echo 
-echo When you installed the software, you chose a URL
-echo that starts with http://scripts.mit.edu/~"$lname"/.
-echo Please enter the full URL where this software was
-echo installed. \(This should correspond to a directory
-echo in /mit/"$lname"/web_scripts/.\)
-printf "URL: http://scripts.mit.edu/~$lname/"
+echo "When you installed the software, you chose a URL"
+echo "that starts with http://scripts.mit.edu/~$lname/."
+echo "Please enter the full URL where this software was"
+echo "installed.  (This should correspond to a directory"
+echo "in /mit/$lname/web_scripts/.)"
+printf "%s" "URL: http://scripts.mit.edu/~$lname/"
 read addrend
 
-addrend=`echo "$addrend" | sed -n 's/^\([a-z0-9A-Z\/-]*[a-z0-9A-Z-]\)\/\?$/\1/ p'`
+addrend=`perl -0e 'print $ARGV[0] =~ /^([\w\/-]*[\w-])\/*$/' -- "$addrend"`
 if [ "$addrend" = "" ]; then
     echo
-    echo ERROR:
-    echo You must enter one or more characters after "~$lname/"
-    echo The completed address must only contain a-z, 0-9, and /.
+    echo "ERROR:"
+    echo "You must enter one or more characters after ~$lname/"
+    echo "The completed address must only contain a-z, 0-9, and /."
     exit 1
 fi
 
 if [ ! -d "$lroot/web_scripts/$addrend" ]; then
     echo
-    echo ERROR:
-    echo The directory "$lroot/web_scripts/$addrend"
-    echo does not exist. Please make sure that this is the
-    echo correct installation directory, and try again, or
-    echo contact scripts@mit.edu for assistance.
+    echo "ERROR:"
+    echo "The directory $lroot/web_scripts/$addrend"
+    echo "does not exist. Please make sure that this is the"
+    echo "correct installation directory, and try again, or"
+    echo "contact scripts@mit.edu for assistance."
     exit 1
 fi
 
@@ -85,9 +84,9 @@ echo
 sqlinfo=`sshrun "sql/bin$scriptsdev/get-password"`
 if [ "$sqlinfo" = "" ]; then
     echo 
-    echo You have a MySQL account but you do not have a .my.cnf file.
-    echo If you do not remember your MySQL account password, you can change it
-    echo at http://sql.mit.edu using MIT certificates. 
+    echo "You have a MySQL account but you do not have a .my.cnf file."
+    echo "If you do not remember your MySQL account password, you can change it"
+    echo "at http://sql.mit.edu using MIT certificates."
     printf "Please type your MySQL password and press [enter]: "
     stty -echo
     read sqlpass
@@ -96,66 +95,66 @@ if [ "$sqlinfo" = "" ]; then
     sqlhost="sql.mit.edu"
     sqluser=$lname
     . "/mit/scripts/sql/bin$scriptsdev/save-password"
-    checksqlpass 1 'The MySQL password that you typed appears to be incorrect.\n' ''
+    checksqlpass 1 'The MySQL password that you typed appears to be incorrect.\n'
     echo
-    echo OK.  Continuing with the uninstaller...
+    echo "OK.  Continuing with the uninstaller..."
 else
-    checksqlpass 0 'The MySQL login information in your .my.cnf file\n' 'appears to be incorrect.\n'
+    checksqlpass 0 'The MySQL login information in your .my.cnf file\nappears to be incorrect.\n'
 fi
 
 sqldb=`sshrun "sql/bin$scriptsdev/get-next-database" "$addrend"`
 if [ "$sqldb" != "${addrend}1" -a "$sqldb" != "$addrend" ]; then
     echo
-    echo ERROR:
-    echo The auto-uninstaller was unable to find the appropriate
-    echo database to drop. Please examine the installation to
-    echo find the database it uses, drop the database from
-    echo http://sql.mit.edu/, and manually remove the "$addrend"
-    echo directory \(or re-run the auto-installer\). Contact
-    echo scripts@mit.edu if you need assistance.
+    echo "ERROR:"
+    echo "The auto-uninstaller was unable to find the appropriate"
+    echo "database to drop. Please examine the installation to"
+    echo "find the database it uses, drop the database from"
+    echo "http://sql.mit.edu/, and manually remove the $addrend"
+    echo "directory (or re-run the auto-installer). Contact"
+    echo "scripts@mit.edu if you need assistance."
     exit 1
 fi
 
-echo Removing files. Please wait...
-echo \(This may take several seconds for large software.\)
+echo "Removing files. Please wait..."
+echo "(This may take several seconds for large software.)"
 if rm -rf "$lroot/web_scripts/$addrend"; then
-    echo The directory "$lroot/web_scripts/$addrend"
-    echo was successfully removed.
+    echo "The directory $lroot/web_scripts/$addrend"
+    echo "was successfully removed."
     if [ -d "$lroot/OldFiles/web_scripts/$addrend" ]; then
-        echo A one-day-old backup of the installation is
-        echo available from "$lroot/OldFiles/web_scripts/$addrend".
+        echo "A one-day-old backup of the installation is"
+        echo "available from $lroot/OldFiles/web_scripts/$addrend".
     fi
 else
-    echo ERROR:
-    echo The directory "$lroot/web_scripts/$addrend"
-    echo could not be removed. Please ensure that you have
-    echo access to this directory and try again, or
-    echo contact scripts@mit.edu for assistance.
+    echo "ERROR:"
+    echo "The directory $lroot/web_scripts/$addrend"
+    echo "could not be removed. Please ensure that you have"
+    echo "access to this directory and try again, or"
+    echo "contact scripts@mit.edu for assistance."
     exit 1
 fi
 
 echo 
 if [ "$sqldb" = "${addrend}1" ]; then
     sqldb="$lname+$addrend"
-    dropped=`sshrun sql/bin$scriptsdev/drop-database "$sqldb"`
+    dropped=`sshrun "sql/bin$scriptsdev/drop-database" "$sqldb"`
     if [ "$dropped" ]; then
-        echo The database "$sqldb"
-        echo was successfully removed.
+        echo "The database $sqldb"
+        echo "was successfully removed."
         attach sql 2>/dev/null
 	if [ -f "/mit/sql/backup/$lname/$sqldb.sql.gz" ]; then
-            echo A one-day-old backup of your SQL database is
-            echo available in /mit/sql/backup/"$lname".
+            echo "A one-day-old backup of your SQL database is"
+            echo "available in /mit/sql/backup/$lname".
         fi
         exit
     else
-        echo ERROR:
-        echo The database "$lname+$addrend"
-        echo could not be automatically removed. You can
-        echo try removing it from http://sql.mit.edu/,
-        echo or you can contact sql@mit.edu for assistance.
+        echo "ERROR:"
+        echo "The database $lname+$addrend"
+        echo "could not be automatically removed. You can"
+        echo "try removing it from http://sql.mit.edu/,"
+        echo "or you can contact sql@mit.edu for assistance."
         exit 1
     fi
 fi
 echo
-echo The installation in "scripts.mit.edu/~$lname/$addrend"
-echo has been successfully uninstalled.
+echo "The installation in http://scripts.mit.edu/~$lname/$addrend"
+echo "has been successfully uninstalled."
