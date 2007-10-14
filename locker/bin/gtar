@@ -1,8 +1,8 @@
 #!/bin/sh
 
-gnu=`/bin/tar --version 2>/dev/null | grep -i gnu`
+gnu=`tar --version 2>/dev/null | grep -i gnu`
 if [ "$gnu" != "" ]; then
-	/bin/tar $@
+	exec tar "$@"
 else
-	athrun gnu gtar $@
+	exec athrun gnu gtar "$@"
 fi
