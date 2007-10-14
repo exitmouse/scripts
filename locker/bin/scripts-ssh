@@ -10,4 +10,9 @@ exec ssh \
 	-o ForwardX11=no \
 	-o GlobalKnownHostsFile=/afs/athena.mit.edu/contrib/scripts/ssh/known_hosts \
 	-o UserKnownHostsFile=/dev/null \
-	scripts.mit.edu -l "$lname" "$(printf "%q " "$@")"
+	scripts.mit.edu -l "$lname" "$(printf "''%q " "$@")"
+
+# ssh gets quoting wrong, so we do it ourself with printf "%q ".
+# Except bash 2 gets printf "%q " wrong for empty arguments, so we use
+# printf "''%q " instead.
+# Isn't software fun?
