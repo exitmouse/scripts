@@ -2,6 +2,7 @@
 use strict;
 use lib '/mit/scripts/deploy/bin';
 use onserver;
+use Cwd;
 
 setup();
 
@@ -21,11 +22,6 @@ fetch_uri(
      DBPrefix => 'jos_',
      DBSample => 1});
 
-my $pwd = `pwd`;
-chomp($pwd);
-
-print "=== $base_uri ===\n";
-    
 fetch_uri(
     'installation/install4.php',
     {},
@@ -36,10 +32,10 @@ fetch_uri(
      DBPrefix => 'jos_',
      sitename => $title,
      siteUrl => $base_uri,
-     absolutePath => $pwd,
+     absolutePath => getcwd(),
      adminEmail => "$human\@mit.edu",
      adminPassword => $admin_password,
      filePerms => 0,
      dirPerms => 0});
 
-`rm -rf installation`;
+system('rm', '-rf', 'installation');
