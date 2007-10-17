@@ -45,7 +45,8 @@ sub unpackPackage($$) {
   mkdir($dir) or die "mkdir($dir) failed: $!";
   my $cwd = cwd();
   chdir($dir) or die $!;
-  `athrun scripts gtar zxf "/mit/scripts/deploy$scriptsdev/$package.tar.gz"`; $? && die "Failed to unpack $package.tar.gz: $?";
+  `athrun scripts gtar zxf "/mit/scripts/deploy$scriptsdev/$package/$package.tar.gz"`;
+  if ($?) { chdir($cwd); system("rmdir", "$dir"); die "Failed to unpack $package.tar.gz: $?"; }
   my @files=`athrun scripts gfind . -mindepth 1 -maxdepth 1 | grep -v .admin`;
   if (@files <= 1) {
     `athrun scripts gfind . -mindepth 2 -maxdepth 2 | xargs -i mv \{} .`;
@@ -66,7 +67,7 @@ sub compareDirectories($$) {
   my @b = @$blist;
   my @aonly, @bonly, @both;
   $a = $b = 0;
-  my $debug = 1;
+  my $debug = 0;
   local $Data::Dumper::Indent = 0;
   while ($a <= $#a || $b <= $#a) {
     my $fa = $a[$a];

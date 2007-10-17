@@ -1,10 +1,11 @@
-#!/usr/athena/bin/perl
+#!/usr/bin/env perl
 
 use File::Spec::Functions qw(:ALL);
 use File::Copy;
 use File::Path;
 use Data::Dumper;
 use Getopt::Long;
+use Archive::Tar;
 use Cwd;
 use strict;
 use warnings;
@@ -32,7 +33,7 @@ my $proposaldir = $updatename.".proposal";
 my $outdir = catdir("/mit/scripts/deploy$scriptsdev/updates/", $updatename);
 
 (-d $proposaldir) or die "Can't find $proposaldir, did you run propose-update?\n";
-(-d $outdir || mkdir($outdir)) or die "mkdir($outdir) failed: $!";
+((! -e $outdir) && mkdir($outdir)) or die "mkdir($outdir) failed: $!";
 
 my $olddir = catdir($proposaldir,$old);
 my $newdir = catdir($proposaldir,$new);
@@ -62,22 +63,33 @@ open(DELETE, ">", catfile($outdir, "files.delete")) or die "Can't open files.del
 print DELETE map { $_->[1]."\n" } @todelete, @toreplace;
 close(DELETE);
 
-my $outfiledir = catdir($outdir, "newfiles");
-(-d $outfiledir || mkdir($outfiledir)) or die "Can't mkdir($outfiledir)\n";
+my $outfiletarball = catfile($outdir, "newfiles.tar.gz");
+my $cwd = getcwd();
 
-foreach my $file (@toadd, @toreplace) {
-  my $filename = $file->[1];
-  my $src = catfile($newdir, $filename);
-  my $dest = catfile($outfiledir, $filename);
-  my (undef, $dir, undef) = splitpath($dest);
-  mkpath($dir);
-  copy($src, $dest) or die "Couldn't copy $filename from $src to $dest: $!";
+chdir($newdir);
+my $tar = Archive::Tar->new;
+$tar->add_files(map { $_->[1] } @toadd, @toreplace);
+$tar->write($outfiletarball, 1);
+chdir($cwd) or die "Couldn't chdir back to $cwd: $!\n";
+
+if (0) {
+    my $outfiledir = catdir($outdir, "newfiles");
+    (-d $outfiledir || mkdir($outfiledir)) or die "Can't mkdir($outfiledir)\n";
+    
+    foreach my $file (@toadd, @toreplace) {
+	my $filename = $file->[1];
+	my $src = catfile($newdir, $filename);
+	my $dest = catfile($outfiledir, $filename);
+	my (undef, $dir, undef) = splitpath($dest);
+	mkpath($dir);
+	copy($src, $dest) or die "Couldn't copy $filename from $src to $dest: $!";
+    }
 }
 
 copy(catfile($proposaldir, "update.diff"), catfile($outdir, "update.diff")) or die "Couldn't copy update.diff: $!";
 
 open (SCRIPT, ">", catfile($outdir, "update")) or die "Couldn't write update: $!";
-printf SCRIPT <<'EOF', $updatename, $new;
+printf SCRIPT <<'EOF', catfile("/mit/scripts/deploy/", $old), catfile("/mit/scripts/deploy/", $new);
 #!/bin/bash
 set -e -o noclobber
 
@@ -87,8 +99,22 @@ patchdir=$(dirname "$0")
 
 >.scripts-security-upd-lock || die "error: Unable to obtain update lock."
 
+packages=$(tail -n 1 .scripts-version)
+
 echo "[$PWD] begin dry run"
 
+found=""
+newpackages=""
+for package in $packages; do
+    if [ "$package" = "%s" ]; then
+    found="yes"
+    newpackages="$newpackages%s "
+    else
+    newpackages="$newpackages$package "
+    fi
+done
+
+[ "$found" = "yes" ] || die "error: Correct version not found."
 xargs -n1 test ! -e <"$patchdir/oldfiles.absent" || die "error: Conflicting files exist."
 md5sum -c "$patchdir/check.md5" || die "error: MD5 check failed."
 patch -stN --dry-run --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || die "error: Patch dry run failed."
@@ -98,8 +124,8 @@ echo "[$PWD] dry run OK, applying update"
 mv .scripts-version .scripts-version.old
 patch -stN --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || :
 xargs rm -f <"$patchdir/files.delete"
-cp -a "$patchdir/newfiles/." .
-(cat .scripts-version.old; date; echo "%s"; echo "%s") >>.scripts-version
+tar -xzf "$patchdir/newfiles.tar.gz"
+(cat .scripts-version.old; date "+%%F %%T %%z"; echo "$USER@$(hostname)"; echo "$patchdir"; echo "$newpackages") >>.scripts-version
 rm -f .scripts-version.old
 
 rm -f .scripts-security-upd-lock
