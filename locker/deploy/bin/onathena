@@ -182,7 +182,7 @@ fs sa . system:anyuser none
 fs sa . system:authuser none
 fs sa . daemon.scripts write
 fs sa . system:scripts-security-upd write
-echo "This directory is used to store temporary files such as sessions. If you delete it, auto-installed packages will fail." >| DO_NOT_DELETE.txt
+echo "This directory is used to store temporary files such as sessions. If you delete it, auto-installed packages will fail." > DO_NOT_DELETE.txt
 mkdir -p "$lroot/web_scripts/$addrend"
 cd "$lroot/web_scripts/$addrend"
 fs sa . system:anyuser none
