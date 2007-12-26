@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/athena/bash
 
 lname=$1
 shift
