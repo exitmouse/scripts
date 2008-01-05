@@ -8,6 +8,12 @@ if [ "$initlname" = "" ]; then
   fi
 fi
 
+if type wget >/dev/null 2>/dev/null; then
+  WGET=wget
+else
+  WGET="athrun gnu wget"
+fi
+
 if [ "$lname" = "" ]; then
   if [ "$1" = "" ]; then
     echo
@@ -42,12 +48,7 @@ fi
 attach "$lname" 2>/dev/null
 
 if [ "$lname" != "$USER" ]; then
-  temp=$lname
-  lname=$USER
-  . "/mit/scripts/bin$scriptsdev/signup-minimal"
-  lname=$temp
-
-  ans=`athrun scripts scripts-ssh "$USER" /usr/local/bin/admof "$lname" "$USER@ATHENA.MIT.EDU"` 
+  ans=`$WGET -q -O- "http://scripts.mit.edu/~signup/admof.php/$lname/$USER@ATHENA.MIT.EDU"`
   if [ "$ans" != "yes" ]; then
     echo
     echo "ERROR:"
@@ -86,12 +87,6 @@ if [ ! -d "/mit/$lname/.scripts-signup" ]; then
   echo "It appears as though you do not have write access to the locker <$lname>."
   echo "Contact scripts@mit.edu if you are unable to solve the problem."
   exit 1
-fi
-
-if type wget >/dev/null 2>/dev/null; then
-  WGET=wget
-else
-  WGET="athrun gnu wget"
 fi
 
 ans=`$WGET -q -O- "http://scripts.mit.edu/~signup/$lname"`
