@@ -125,7 +125,14 @@ mv .scripts-version .scripts-version.old
 patch -stN --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || :
 xargs rm -f <"$patchdir/files.delete"
 tar -xzf "$patchdir/newfiles.tar.gz"
-(cat .scripts-version.old; date "+%%F %%T %%z"; echo "$USER@$(hostname)"; echo "$patchdir"; echo "$newpackages") >>.scripts-version
+(
+    cat .scripts-version.old
+    echo
+    date "+%%F %%T %%z"
+    echo "$USER@$(hostname)"
+    echo "$patchdir"
+    echo "$newpackages"
+) >.scripts-version
 rm -f .scripts-version.old
 
 rm -f .scripts-security-upd-lock
