@@ -31,8 +31,9 @@ if [ "$lname" = "" ]; then
         echo "OK.  A locker of your choice that you control will be signed up."
         echo "Please enter the name of the selected locker below."
         echo "(For the locker /mit/sipb, you would enter sipb)."
-        printf "Locker name: "
-        read lname
+        while printf "Locker name: "; read lname; ! attach "$lname" 2>/dev/null; do
+        	echo "$lname is not a valid locker name."
+        done
         lroot="/mit/$lname"
     else
         echo
@@ -43,15 +44,6 @@ if [ "$lname" = "" ]; then
   else
     lname=$1
   fi
-fi
-
-attach "$lname" 2>/dev/null
-
-if [ ! -d "/mit/$lname" ]; then
-  echo
-  echo "ERROR:"
-  echo "Cannot find locker <$lname>."
-  exit 1
 fi
 
 ans=`$WGET -q -O- "http://scripts.mit.edu/~signup/fsla.php/mit/$lname"`
