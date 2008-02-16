@@ -74,7 +74,7 @@ if [ "$ans" != "yes" ]; then
   exit 1
 fi
 
-mkdir "/mit/$lname/.scripts-signup"
+mkdir -p "/mit/$lname/.scripts-signup"
 
 if [ ! -d "/mit/$lname/.scripts-signup" ]; then
   echo

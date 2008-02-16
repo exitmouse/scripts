@@ -8,7 +8,7 @@ checkfailed() {
 }
 
 sshrun() {
-  athrun scripts scripts-ssh "$lname" "/mit/scripts/$@"
+  athrun scripts scripts-ssh "$lname" "/mit/scripts/$@" 2>/dev/null
 }
 
 vsshrun() {
@@ -41,7 +41,7 @@ echo
 echo Are you performing this signup for:
 echo 1. Your personal Athena account
 echo 2. A locker that you control \(a club, a course, etc\)
-echo If you do not understand this question, you should answer \'1\'.
+echo "If you do not understand this question, you should answer '1'".
 printf "Please enter either '1' or '2' (without quotes): "
 read whofor
 if [ "$whofor" -eq 1 ]; then
@@ -72,7 +72,7 @@ if [ "$requires_sql" = "" ]; then
 fi
 
 if [ ! -f "$lroot/.my.cnf" ]; then
-  mkdir $lroot/.sql
+  mkdir -p $lroot/.sql
   fs sa $lroot/.sql system:anyuser none
   fs sa $lroot/.sql system:authuser none
   fs sa $lroot/.sql daemon.scripts write
