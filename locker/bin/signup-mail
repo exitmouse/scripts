@@ -1,10 +1,10 @@
 #!/bin/sh
 
-attach scripts 2>/dev/null
+attach scripts
 . /mit/scripts/bin$scriptsdev/signup-minimal
 
 if [ ! -d "/mit/$lname/mail_scripts/" ]; then
-  mkdir 2>/dev/null /mit/$lname/mail_scripts
+  mkdir /mit/$lname/mail_scripts
   fs sa /mit/$lname/mail_scripts system:anyuser l
   fs sa /mit/$lname/mail_scripts system:authuser none
   fs sa /mit/$lname/mail_scripts daemon.scripts read

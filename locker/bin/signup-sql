@@ -8,7 +8,7 @@ checkfailed() {
 }
 
 sshrun() {
-  athrun scripts scripts-ssh "$lname" "/mit/scripts/$@" 2>/dev/null
+  athrun scripts scripts-ssh "$lname" "/mit/scripts/$@"
 }
 
 vsshrun() {
@@ -64,7 +64,7 @@ fi
 
 # Users need to sign up for scripts.mit.edu so that they can
 # authenticate themselves to sql.mit.edu
-attach scripts 2>/dev/null
+attach scripts
 . /mit/scripts/bin$scriptsdev/signup-web
 
 if [ "$requires_sql" = "" ]; then
@@ -72,12 +72,12 @@ if [ "$requires_sql" = "" ]; then
 fi
 
 if [ ! -f "$lroot/.my.cnf" ]; then
-  mkdir $lroot/.sql 2>/dev/null
+  mkdir $lroot/.sql
   fs sa $lroot/.sql system:anyuser none
   fs sa $lroot/.sql system:authuser none
   fs sa $lroot/.sql daemon.scripts write
   fs sa $lroot/.sql daemon.sql write
-  ln -nfs $lroot/.sql/my.cnf $lroot/.my.cnf 2>/dev/null
+  ln -nfs $lroot/.sql/my.cnf $lroot/.my.cnf
 fi
 
 if [ "$requires_sql" -eq 1 ]; then

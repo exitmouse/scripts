@@ -34,7 +34,7 @@ if [ "$lname" = "" ]; then
         while true; do
 	    printf "Locker name: "
 	    read lname
-	    if attach "$lname" 2>/dev/null; then
+	    if attach "$lname"; then
 		break
 	    fi
 	    echo "$lname is not a valid locker name."
@@ -74,7 +74,7 @@ if [ "$ans" != "yes" ]; then
   exit 1
 fi
 
-mkdir "/mit/$lname/.scripts-signup" 2>/dev/null
+mkdir "/mit/$lname/.scripts-signup"
 
 if [ ! -d "/mit/$lname/.scripts-signup" ]; then
   echo

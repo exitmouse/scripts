@@ -1,10 +1,10 @@
 #!/bin/sh
 
-attach scripts 2>/dev/null
+attach scripts
 . /mit/scripts/bin$scriptsdev/signup-minimal
 
 if [ ! -d "/mit/$lname/cron_scripts/" ]; then
-  mkdir 2>/dev/null /mit/$lname/cron_scripts
+  mkdir /mit/$lname/cron_scripts
   fs sa /mit/$lname/cron_scripts system:anyuser l
   fs sa /mit/$lname/cron_scripts system:authuser none
   fs sa /mit/$lname/cron_scripts daemon.scripts write
