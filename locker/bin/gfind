@@ -1,7 +1,6 @@
 #!/bin/sh
 
-gnu=`find --version 2>/dev/null | grep -i gnu`
-if [ "$gnu" != "" ]; then
+if find / -maxdepth 0 >/dev/null >&2; then
 	exec find "$@"
 else
 	exec athrun gnu gfind "$@"
