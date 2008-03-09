@@ -122,6 +122,9 @@ sub setup {
   } 
 
   print "\nConfiguring $sname...\n";
+  if($requires_sql) {
+	  print "A copy of $lname's SQL login info will be placed in $addrend.\n";
+  }
   
   open(VERSION, ">.scripts-version") or die "Can't write scripts-version file: $!\n";
   print VERSION strftime("%F %T %z\n", localtime);
