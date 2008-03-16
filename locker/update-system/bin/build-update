@@ -98,6 +98,11 @@ if (0) {
 
 copy(catfile($proposaldir, "update.diff"), catfile($outdir, "update.diff")) or die "Couldn't copy update.diff: $!";
 
+if (-d catfile($proposaldir, "extra")) {
+  system('/bin/cp', '-pr', catfile($proposaldir, "extra"), catfile($outdir, "extra"))
+    and die "Couldn't copy extra: $!";
+}
+
 open (SCRIPT, ">", catfile($outdir, "update")) or die "Couldn't write update: $!";
 printf SCRIPT <<'EOF', catfile("/mit/scripts/deploy/", $old), catfile("/mit/scripts/deploy/", $new);
 #!/bin/bash
@@ -135,6 +140,7 @@ mv .scripts-version .scripts-version.old
 patch -stN --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || :
 xargs rm -f <"$patchdir/files.delete"
 tar -xzf "$patchdir/newfiles.tar.gz"
+[ -e "$patchdir/extra/postpatch.sh" ] && . "$patchdir/extra/postpatch.sh"
 (
     cat .scripts-version.old
     echo
