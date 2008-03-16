@@ -126,7 +126,7 @@ done
 
 [ "$found" = "yes" ] || die "error: Correct version not found."
 xargs -n1 test ! -e <"$patchdir/oldfiles.absent" || die "error: Conflicting files exist."
-md5sum -c "$patchdir/check.md5" || die "error: MD5 check failed."
+[ -s "$patchdir/check.md5" ] && (md5sum -c "$patchdir/check.md5" || die "error: MD5 check failed.")
 patch -stN --dry-run --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || die "error: Patch dry run failed."
 
 echo "[$PWD] dry run OK, applying update"
