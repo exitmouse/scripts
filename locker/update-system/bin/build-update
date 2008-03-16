@@ -11,6 +11,7 @@ use strict;
 use warnings;
 
 my $scriptsdev = "";
+my $force = 0;
 
 GetOptions(
 #"redo-delete" => \$redodelete,
@@ -19,6 +20,7 @@ GetOptions(
 #	   "redo-diff" => \$redodiff,
 #	   "redo-all" => sub {$redodelete = $redoadd = $redoreplace = $redodiff = 1;},
 	   "dev" => sub {$scriptsdev = "dev";},
+           "force" => \$force,
 		  );
 
 if (@ARGV < 3) {
@@ -33,6 +35,14 @@ my $proposaldir = $updatename.".proposal";
 my $outdir = catdir("/mit/scripts/deploy$scriptsdev/updates/", $updatename);
 
 (-d $proposaldir) or die "Can't find $proposaldir, did you run propose-update?\n";
+if (-e $outdir) {
+    if ($force) {
+        print STDERR "Clobbering $outdir.\n";
+        `rm -rf '$outdir'`;
+    } else {
+        die "Output directory $outdir exists; try --force.\n";
+    }
+}
 ((! -e $outdir) && mkdir($outdir)) or die "mkdir($outdir) failed: $!";
 
 my $olddir = catdir($proposaldir,$old);
@@ -93,7 +103,7 @@ printf SCRIPT <<'EOF', catfile("/mit/scripts/deploy/", $old), catfile("/mit/scri
 #!/bin/bash
 set -e -o noclobber
 
-die () { echo "$1" >&2; exit 1; }
+die () { echo "$1" >&2; rm .scripts-security-upd-lock; exit 1; }
 
 patchdir=$(dirname "$0")
 
