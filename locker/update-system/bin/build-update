@@ -114,7 +114,7 @@ patchdir=$(dirname "$0")
 
 >.scripts-security-upd-lock || die "error: Unable to obtain update lock."
 
-packages=$(tail -n 1 .scripts-version)
+packages=$(tail -1 .scripts-version)
 
 echo "[$PWD] begin dry run"
 
