@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+use strict;
+use lib '/mit/scripts/deploy/bin';
+use onserver;
+use Cwd;
+use File::Path;
+use URI::Escape;
+
+setup();
+
+print "\nEnter the name of your project (the title of this Trac instance).\n";
+print "Project name: ";
+my $name=<STDIN>;
+chomp($name);
+
+my $dbstring = "mysql://" . uri_escape($sqluser) . ":" . uri_escape($sqlpass) . "\@$sqlhost/$sqldb";
+
+print "\nEnter the type of version-control repository this project uses.\n";
+print "You'll have to set up the repo yourself; feel free to ask scripts@ for help.\n";
+print "If you don't want version-control integration, take the default.\n";
+print "Repository type (default svn; also bzr, git, hg): ";
+my $repotype=<STDIN>;
+chomp($repotype);
+$repotype = $repotype ? $repotype : 'svn';
+
+print "\nEnter the path to the version-control repository.\n";
+print "If you don't want version-control integration, leave blank.\n";
+print "Path to repository: ";
+my $repopath=<STDIN>;
+chomp($repopath);
+
+print STDERR "running trac-admin:\n";
+system(qw(/usr/bin/trac-admin tracdata initenv),
+       $name, $dbstring, $repotype, $repopath, '/usr/share/trac/templates');
+# XXX this exposes the SQL password on the command line
+
+#aka perl -pe 's/\@ADDREND\@/$addrend/g' <.htaccess.in >.htaccess
+open IN, '<.htaccess.in'; open OUT, '>.htaccess';
+while (<IN>) {
+    s/\@ADDREND\@/$addrend/g;
+    print OUT $_;
+}
+close IN; close OUT;
+
+chmod 0777, '.htaccess';
+unlink '.htaccess.in';
+
+exit 0;

@@ -5,6 +5,8 @@ use onserver;
 use Cwd;
 use File::Path;
 
+$ua->cookie_jar({file => '.cookies'});
+
 setup();
 
 print "\nPlease decide upon a title for your site and enter it below.\n";
@@ -13,30 +15,85 @@ my $title = <STDIN>;
 chomp($title);
 
 fetch_uri(
-    'installation/install2.php',
-    {},
-    {DBhostname => $sqlhost,
-     DBuserName => $sqluser,
-     DBpassword => $sqlpass,
-     DBDel => 0,
-     DBname => $sqldb,
-     DBPrefix => 'jos_',
-     DBSample => 1});
+    'installation/index.php',
+    {});
 
 fetch_uri(
-    'installation/install4.php',
+    'installation/index.php',
     {},
-    {DBhostname => $sqlhost,
-     DBuserName => $sqluser,
-     DBpassword => $sqlpass,
-     DBname => $sqldb,
-     DBPrefix => 'jos_',
-     sitename => $title,
-     siteUrl => $base_uri,
-     absolutePath => getcwd(),
-     adminEmail => $email,
-     adminPassword => $admin_password,
-     filePerms => 0,
-     dirPerms => 0});
+    {"vars[lang]" => "en-GB", 
+     task => "preinstall"});
 
-rmtree('installation');
+fetch_uri(
+    'installation/index.php',
+    {},
+    {task => "license"});
+
+fetch_uri(
+    'installation/index.php',
+    {},
+    {task => "dbconfig"});
+
+fetch_uri(
+    'installation/index.php',
+    {},
+     {"vars[DBtype]" => "mysql",
+      "vars[DBhostname]" => $sqlhost,
+      "vars[DBuserName]" => $sqluser,
+      "vars[DBpassword]" => $sqlpass,
+      "vars[DBname]" => $sqldb,
+      "vars[DBOld]" => "rm",
+      "vars[DBPrefix]" => "jos_",
+      "vars[lang]" => "en-GB",
+      "vars[ftpEnable]" => 0,
+      task => "makedb"});
+
+fetch_uri(
+    'installation/index.php',
+    {},
+     {"vars[ftpEnable]" => 0,
+      "vars[ftpUser]" => "",
+      "vars[ftpPassword]" => "",
+      "vars[ftpRoot]" => "",
+      "vars[ftpHost]" => "",
+      "vars[ftpPort]" => "",
+      "vars[ftpSavePass]" => 0,
+      lang => "en-GB",
+      task => "mainconfig"});
+
+fetch_uri(
+    'installation/index.php',
+    {},
+    {"vars[siteName]" => 'OHAI',
+      "vars[adminEmail]" => $email,
+      "vars[adminPassword]" => $admin_password,
+      "vars[confirmAdminPassowrd]" => $admin_password,
+      #"instDefault" => "Install Sample Data",
+      "vars[oldPrefix]" => "",
+      "vars[srcEncoding]" => "",
+      sqlFile => "",
+      sqlUploaded => "",
+      migration => "",
+      sqlupload => 0,
+      migrationupload => 0,
+      loadchecked => 0,
+      dataLoaded => "",
+      DBtype => "mysql",
+      DBhostname => $sqlhost,
+      DBuserName => $sqluser,
+      DBpassword => $sqlpass,
+      DBname => $sqldb,
+      DBPrefix => "jos_",
+      ftpRoot => "", 
+      ftpEnable => 0,
+      ftpHost => 127.0.0.1,
+      ftpPort => 21, 
+      ftpUser => "", 
+      ftpPassword => "", 
+      lang => "en-GB",
+      migstatus => "",
+     task => "saveconfig"});
+
+`mv installation installation-old`;
+
+exit 0;
