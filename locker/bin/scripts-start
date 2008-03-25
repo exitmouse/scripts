@@ -11,8 +11,9 @@ echo "5. Gallery2"
 echo "6. phpBB"
 echo "7. Advanced Guest Book"
 echo "8. PHP iCalendar"
+echo "9. Trac"
 echo
-printf "Please enter a number 1-8: "
+printf "Please enter a number 1-9: "
 read num
 echo
 
@@ -33,8 +34,10 @@ elif [ "$num" = 7 ]; then
   . "/mit/scripts/bin$scriptsdev/scripts-advancedbook"
 elif [ "$num" = 8 ]; then
   . "/mit/scripts/bin$scriptsdev/scripts-phpical"
+elif [ "$num" = 9 ]; then
+  . "/mit/scripts/bin$scriptsdev/scripts-trac"
 else
   echo "ERROR:"
-  echo "You must enter a number 1 through 8."
+  echo "You must enter a number 1 through 9."
   exit 1
 fi
