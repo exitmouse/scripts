@@ -42,7 +42,7 @@ system(qw(/usr/bin/trac-admin tracdata initenv),
 #aka perl -pe 's/\@ADDREND\@/$addrend/g' <.htaccess.in >.htaccess
 open IN, '<.htaccess.in'; open OUT, '>.htaccess';
 while (<IN>) {
-    s/\@ADDREND\@/$addrend/g;
+    s/\@ADDREND\@/~$USER\/$addrend/g;
     print OUT $_;
 }
 close IN; close OUT;
