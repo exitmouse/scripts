@@ -45,4 +45,9 @@ close IN; close OUT;
 chmod 0777, '.htaccess';
 unlink '.htaccess.in';
 
+open OUT, '>tracdata/.htaccess';
+print OUT 'Deny from all\n';
+close OUT;
+chmod 0777, 'tracdata/.htaccess';
+
 exit 0;
