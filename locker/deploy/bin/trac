@@ -5,6 +5,8 @@ use onserver;
 use Cwd;
 use File::Path;
 use URI::Escape;
+use DBI;
+use Config::IniFiles;
 
 setup();
 
@@ -12,6 +14,9 @@ print "\nEnter the name of your project (the title of this Trac instance).\n";
 print "Project name: ";
 my $name=<STDIN>;
 chomp($name);
+
+my $dbh = DBI->connect("DBI:mysql:database=$sqldb;host=$sqlhost", $sqluser, $sqlpass, {RaiseError => 1});
+$dbh->do('alter database collate utf8_general_ci');
 
 my $dbstring = "mysql://" . uri_escape($sqluser) . ":" . uri_escape($sqlpass) . "\@$sqlhost/$sqldb";
 
@@ -41,6 +46,14 @@ while (<IN>) {
     print OUT $_;
 }
 close IN; close OUT;
+
+my $cfg = Config::IniFiles->new(-file => 'tracdata/conf/trac.ini');
+$cfg->setval('trac', 'default_charset', 'utf-8');
+$cfg->AddSection('components');
+$cfg->newval('components', 'webadmin.*', 'enabled');
+$cfg->RewriteConfig();
+
+system(qw(/usr/bin/trac-admin tracdata permission add), $human, 'TRAC_ADMIN');
 
 chmod 0777, '.htaccess';
 unlink '.htaccess.in';
