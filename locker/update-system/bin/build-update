@@ -104,7 +104,7 @@ if (-d catfile($proposaldir, "extra")) {
 }
 
 open (SCRIPT, ">", catfile($outdir, "update")) or die "Couldn't write update: $!";
-printf SCRIPT <<'EOF', catfile("/mit/scripts/deploy/", $old), catfile("/mit/scripts/deploy/", $new);
+printf SCRIPT <<'EOF', catfile("/afs/athena.mit.edu/contrib/scripts/deploy/", $old), catfile("/afs/athena.mit.edu/contrib/scripts/deploy/", $new);
 #!/bin/bash
 set -e -o noclobber
 
