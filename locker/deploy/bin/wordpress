@@ -2,6 +2,7 @@
 use strict;
 use lib '/mit/scripts/deploy/bin';
 use onserver;
+use DBI;
 
 setup();
 
@@ -27,6 +28,13 @@ while ($html =~ /<dd><code>(.*)<\/code><\/dd>/g) {
     $admin_username = $admin_password;
     $admin_password = $1;
 }
+
+my $dbh = DBI->connect("dbi:mysql:database=$sqldb;host=$sqlhost", $sqluser, $sqlpass);
+$dbh->do("update wp_options set option_value = ? where option_name = 'siteurl'",
+         {}, "/~$USER/$addrend");
+$dbh->do("update wp_options set option_value = ? where option_name = 'home'",
+         {}, "http://$USER.$server/$addrend");
+$dbh->disconnect;
 
 print_login_info();
 print "You will also receive this login information at your MIT email address.\n";
