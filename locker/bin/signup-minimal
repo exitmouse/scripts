@@ -51,6 +51,8 @@ if [ "$lname" = "" ]; then
   fi
 fi
 
+attach "$lname" 2>/dev/null
+
 ans=`$WGET -q -O- "http://scripts.mit.edu/~signup/fsla.php/mit/$lname"`
 if [ "$ans" != "0" ]; then
   echo
