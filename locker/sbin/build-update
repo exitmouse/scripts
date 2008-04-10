@@ -11,7 +11,6 @@ use strict;
 use warnings;
 
 my $scriptsdev = "";
-my $force = 0;
 
 GetOptions(
 #"redo-delete" => \$redodelete,
@@ -20,7 +19,6 @@ GetOptions(
 #	   "redo-diff" => \$redodiff,
 #	   "redo-all" => sub {$redodelete = $redoadd = $redoreplace = $redodiff = 1;},
 	   "dev" => sub {$scriptsdev = "dev";},
-           "force" => \$force,
 		  );
 
 if (@ARGV < 3) {
@@ -35,14 +33,6 @@ my $proposaldir = $updatename.".proposal";
 my $outdir = catdir("/mit/scripts/deploy$scriptsdev/updates/", $updatename);
 
 (-d $proposaldir) or die "Can't find $proposaldir, did you run propose-update?\n";
-if (-e $outdir) {
-    if ($force) {
-        print STDERR "Clobbering $outdir.\n";
-        `rm -rf '$outdir'`;
-    } else {
-        die "Output directory $outdir exists; try --force.\n";
-    }
-}
 ((! -e $outdir) && mkdir($outdir)) or die "mkdir($outdir) failed: $!";
 
 my $olddir = catdir($proposaldir,$old);
@@ -98,23 +88,18 @@ if (0) {
 
 copy(catfile($proposaldir, "update.diff"), catfile($outdir, "update.diff")) or die "Couldn't copy update.diff: $!";
 
-if (-d catfile($proposaldir, "extra")) {
-  system('/bin/cp', '-pr', catfile($proposaldir, "extra"), catfile($outdir, "extra"))
-    and die "Couldn't copy extra: $!";
-}
-
 open (SCRIPT, ">", catfile($outdir, "update")) or die "Couldn't write update: $!";
-printf SCRIPT <<'EOF', catfile("/afs/athena.mit.edu/contrib/scripts/deploy/", $old), catfile("/afs/athena.mit.edu/contrib/scripts/deploy/", $new);
+printf SCRIPT <<'EOF', catfile("/mit/scripts/deploy/", $old), catfile("/mit/scripts/deploy/", $new);
 #!/bin/bash
 set -e -o noclobber
 
-die () { echo "$1" >&2; rm .scripts-security-upd-lock; exit 1; }
+die () { echo "$1" >&2; exit 1; }
 
 patchdir=$(dirname "$0")
 
 >.scripts-security-upd-lock || die "error: Unable to obtain update lock."
 
-packages=$(tail -1 .scripts-version)
+packages=$(tail -n 1 .scripts-version)
 
 echo "[$PWD] begin dry run"
 
@@ -130,8 +115,8 @@ for package in $packages; do
 done
 
 [ "$found" = "yes" ] || die "error: Correct version not found."
-[ -s "$patchdir/oldfiles.absent" ] && (xargs -n1 test ! -e <"$patchdir/oldfiles.absent" || die "error: Conflicting files exist." )
-[ -s "$patchdir/check.md5" ] && (md5sum -c "$patchdir/check.md5" || die "error: MD5 check failed.")
+xargs -n1 test ! -e <"$patchdir/oldfiles.absent" || die "error: Conflicting files exist."
+md5sum -c "$patchdir/check.md5" || die "error: MD5 check failed."
 patch -stN --dry-run --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || die "error: Patch dry run failed."
 
 echo "[$PWD] dry run OK, applying update"
@@ -140,7 +125,6 @@ mv .scripts-version .scripts-version.old
 patch -stN --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || :
 xargs rm -f <"$patchdir/files.delete"
 tar -xzf "$patchdir/newfiles.tar.gz"
-[ -e "$patchdir/extra/postpatch.sh" ] && . "$patchdir/extra/postpatch.sh"
 (
     cat .scripts-version.old
     echo
