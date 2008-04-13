@@ -123,7 +123,7 @@ sub setup {
 
   print "\nConfiguring $sname...\n";
   if($requires_sql) {
-	  print "A copy of ${lname}'s SQL login info will be placed in $addrend.\n";
+    print "A copy of ${USER}'s SQL login info will be placed in\n/mit/$USER/web_scripts/$addrend.\n";
   }
   
   open(VERSION, ">.scripts-version") or die "Can't write scripts-version file: $!\n";
