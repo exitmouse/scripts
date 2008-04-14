@@ -19,6 +19,20 @@ use POSIX ":sys_wait_h"; # imports WNOHANG
 # Note that we miss things where one volume is inside another if we
 # use -xdev.  May miss libraries stuff.
 
+sub updatable ($) {
+    my $filename = shift;
+    for my $l (`fs la "$filename"`) {
+        return 1 if ($l =~ /^  system:scripts-security-upd rlidwk/);
+    }
+    return 0;
+}
+
+sub version ($) {
+    my $dirname = shift;
+    open my $h, "$dirname/.scripts-version";
+    return (<$h>)[-1];
+}
+
 sub find ($$) {
     my $user = shift;
     my $homedir = shift;
@@ -26,7 +40,14 @@ sub find ($$) {
     open my $files, "find $homedir/web_scripts -xdev -name .scripts-version 2>/dev/null |";
     open my $out, ">$dump/$user";
     while (my $f = <$files>) {
-        print $out $f;
+        chomp $f;
+        $f =~ s!/\.scripts-version$!!;
+        if (! updatable($f)) {
+            print STDERR "not updatable: $f";
+            next;
+        }
+        $v = version($f);
+        print $out "$f:$v";
     }
     return 0;
 }
