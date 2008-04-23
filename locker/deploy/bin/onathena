@@ -62,8 +62,7 @@ echo "If you do not understand this question, you should answer '1'."
 printf "Please enter either '1' or '2' (without quotes): "
 read whofor
 if [ "$whofor" = 1 ]; then
-    lname=$USER
-    lroot=$HOME 
+    lname="${ATHENA_USER:-$USER}"
 elif [ "$whofor" = 2 ]; then
     echo
     echo "OK.  $sname will be installed into a locker of your choice that"
@@ -72,13 +71,21 @@ elif [ "$whofor" = 2 ]; then
     echo "/afs/athena.mit.edu/activity/l/lsc -- you would simply enter lsc)."
     printf "Locker name: "
     read lname
-    lroot="/mit/$lname" 
 else
     echo
     echo "ERROR:"
     echo "You must select either '1' or '2'."
     exit 1
 fi
+while true; do
+    if attach "$lname"; then
+        break
+    fi
+    echo "$lname is not a valid locker name."
+    printf "Locker name: "
+    read lname
+done
+lroot="/mit/$lname" 
 
 echo
 echo Checking the status of your scripts.mit.edu account...
