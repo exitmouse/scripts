@@ -87,6 +87,9 @@ if (0) {
 }
 
 copy(catfile($proposaldir, "update.diff"), catfile($outdir, "update.diff")) or die "Couldn't copy update.diff: $!";
+if (-d catdir($proposaldir, "extra")) {
+    system('cp', '-r', catdir($proposaldir, "extra"), $outdir) && die "Couldn't copy extra: $!";
+}
 
 open (SCRIPT, ">", catfile($outdir, "update")) or die "Couldn't write update: $!";
 printf SCRIPT <<'EOF', catfile("/afs/athena.mit.edu/contrib/scripts/deploy/", $old), catfile("/afs/athena.mit.edu/contrib/scripts/deploy/", $new);
