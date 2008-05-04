@@ -24,7 +24,7 @@ my $html = fetch_uri(
      admin_email => $email,
      submit => 'Continue',
      step => 2});
-while ($html =~ /<dd><code>(.*)<\/code><\/dd>/g) {
+while ($html =~ /<code>(.*)<\/code>/g) {
     $admin_username = $admin_password;
     $admin_password = $1;
 }
