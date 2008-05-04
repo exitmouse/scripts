@@ -115,6 +115,8 @@ for package in $packages; do
 done
 
 [ "$found" = "yes" ] || die "error: Correct version not found."
+[ -e "$patchdir/extra/prepatch.sh" ] && (. "$patchdir/extra/prepatch.sh" || die "error: prepatch failed")
+
 [ -s "$patchdir/oldfiles.absent" ] && (xargs -n1 test ! -e <"$patchdir/oldfiles.absent" || die "error: Conflicting files exist." )
 [ -s "$patchdir/check.md5" ] && (md5sum -c "$patchdir/check.md5" || die "error: MD5 check failed.")
 patch -stN --dry-run --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || die "error: Patch dry run failed."
