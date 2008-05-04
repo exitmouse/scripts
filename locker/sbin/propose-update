@@ -18,7 +18,7 @@ GetOptions("redo-delete" => \$redodelete,
 		  );
 
 if (@ARGV < 3) {
-  print STDERR "Usage: $0 [--redo-{delete,add,replace,diff,all} | --dev] package oldversion newversion\n";
+  print STDERR "Usage: $0 [--redo-{delete|add|replace|diff|all}] [--dev] package oldversion newversion\n";
   exit(1);
 }
 
