@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ "$1" = "web" ]; then
+    athrun scripts signup-web
+elif [ "$1" = "cron" ]; then
+    athrun scripts signup-cron
+elif [ "$1" = "mail" ]; then
+    athrun scripts signup-mail
+elif [ "$1" = "sql" ]; then
+    athrun scripts signup-sql
+else
+    echo "Scripts has multiple services you can sign up for:"
+    echo "    signup-web    Web script hosting"
+    echo "    signup-cron   Scheduled jobs"
+    echo "    signup-mail   Mail scripts"
+    echo "    signup-sql    MySQL hosting"
+    exit 1
+fi
