@@ -90,6 +90,14 @@ fi
 ans=`$WGET -q -O- "http://scripts.mit.edu/~signup/$lname"`
 rmdir "/mit/$lname/.scripts-signup"
 
+if [ "$ans" = "done" ]; then
+  # nscd caches account nonexistence with a 5-second TTL.
+  # (LDAP updates are more or less instant.)
+  # Somehow, the server can wait up to 10 seconds...
+  echo "Creating scripts.mit.edu account for $lname..."
+  sleep 10
+fi
+
 if [ "$ans" != "done" ] && [ "$ans" != "username already taken" ]; then
   echo "ERROR:"
   echo "Signup reported the following error: \"$ans\"."
