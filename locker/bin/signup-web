@@ -13,6 +13,6 @@ if [ ! -d "/mit/$lname/web_scripts/" ]; then
 else 
     success "the web script service" "The directory /mit/$lname/web_scripts already exists."
 fi
-if [ ! -e "/mit/$lname/web_scripts/.htaccess.mit" ]; then
+if [ ! -f "/mit/$lname/web_scripts/.htaccess.mit" ]; then
     ln -ns /afs/athena.mit.edu/contrib/scripts/www/web_scripts-.htaccess.mit /mit/$lname/web_scripts/.htaccess.mit
 fi
