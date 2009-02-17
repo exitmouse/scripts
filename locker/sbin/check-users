@@ -1,0 +1,79 @@
+#!/bin/bash
+set -e
+
+err() {
+    echo "$@"
+}
+
+if [ -z "$1" ]; then
+    filter="objectClass=posixAccount"
+else
+    filter=
+    for user; do
+	filter="$filter(uid=$user)"
+    done
+    filter="(&(objectClass=posixAccount)(|$filter))"
+fi
+
+unset "${!l_@}"
+while read attr value; do
+    if [ -n "$attr" ]; then
+	declare "l_${attr%:}=$value"
+	continue
+    fi
+
+    read f_type f_data < <(hesinfo "$l_uid" filsys) || :
+    if [ -z "$f_type" ]; then
+	err "$l_uid" "no_hesiod"
+    elif [ "$f_type" = "ERR" ]; then
+	err "$l_uid" "hesiod_err ERR $f_data"
+    elif [ "$f_type" = "AFS" ]; then
+	read f_path f_perm f_link z \
+	    < <(echo "$f_data")
+	[ "$l_homeDirectory" = "$f_path" ] || \
+	    err "$l_uid" "hesiod_path $f_path"
+    else
+	err "$l_uid" "wrong_hesiod $f_type"
+    fi
+
+    IFS=/ read p_empty p_top p_cell p \
+	< <(echo "$l_homeDirectory")
+    [ -z "${p_empty}" ] || \
+	err "$l_uid" "relative_home $l_homeDirectory"
+    [ "${p_top}" = "afs" ] || \
+	err "$l_uid" "not_afs $l_homeDirectory"
+
+    read v_vname v_vol v \
+	< <(vos exa -noauth "$l_uidNumber" -cell "$p_cell" 2>/dev/null) || :
+    [ "$v_vol" = "$l_uidNumber" ] ||
+	err "$l_uid" "no_vol $l_uidNumber"
+
+    if ! [ -d "$l_homeDirectory" ]; then
+	if ! [ -e "$l_homeDirectory" ]; then
+	    err "$l_uid" "deleted $l_homeDirectory"
+	else
+	    err "$l_uid" "not_dir $l_homeDirectory"
+	fi
+    else
+	read c c_path c c c c_cell \
+	    < <(fs whichcell "$l_homeDirectory" 2>/dev/null) || :
+	[ "$c_path" = "$l_homeDirectory" ] || \
+	    err "$l_uid" "no_cell $l_homeDirectory"
+	[ "$c_cell" = "'$p_cell'" ] || \
+	    err "$l_uid" "wrong_cell $l_homeDirectory"
+
+	read m_path m m m m m m m_vname \
+	    < <(fs lsmount "$l_homeDirectory" 2>/dev/null) || :
+	[ "$m_path" = "'$l_homeDirectory'" ] || \
+	    err "$l_uid" "no_mount $l_homeDirectory"
+	[ "$m_vname" = "'#$v_vname'" ] || [ "$m_vname" = "'%$v_vname'" ] || \
+	    err "$l_uid" "wrong_mount $m_vname ($l_uidNumber = $v_vname)"
+    fi
+
+    unset "${!l_@}"
+done < <(
+    ldapsearch -LLL -x -D 'cn=Directory Manager' -y /etc/signup-ldap-pw \
+        -b ou=People,dc=scripts,dc=mit,dc=edu "$filter" \
+        uid uidNumber homeDirectory loginShell | \
+        perl -0pe 's/\n //g;'
+    )
