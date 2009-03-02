@@ -1,43 +1,35 @@
 #!/bin/sh
 
+choices () {
+    echo 'mediawiki MediaWiki'
+    echo 'wordpress WordPress'
+    echo 'joomla Joomla'
+    echo 'e107 e107'
+    echo 'gallery2 Gallery2'
+    echo 'phpbb phpBB'
+    echo 'advancedbook Advanced Guest Book'
+    echo 'phpical PHP iCalendar'
+    echo 'trac Trac'
+    echo 'turbogears TurboGears'
+}
+
+nchoices=`choices | wc -l`
+
 echo
 echo "What piece of software would you like to install?"
 echo
-echo "1. MediaWiki"
-echo "2. WordPress"
-echo "3. Joomla"
-echo "4. e107"
-echo "5. Gallery2"
-echo "6. phpBB"
-echo "7. Advanced Guest Book"
-echo "8. PHP iCalendar"
-echo "9. Trac"
+choices | sed 's/^[^ ]* //' | cat -n
 echo
-printf "Please enter a number 1-9: "
+printf "Please enter a number 1-%d: " "$nchoices"
 read num
 echo
 
 attach scripts 2>/dev/null
-if [ "$num" = 1 ]; then
-  . "/mit/scripts/bin$scriptsdev/scripts-mediawiki"
-elif [ "$num" = 2 ]; then
-  . "/mit/scripts/bin$scriptsdev/scripts-wordpress"
-elif [ "$num" = 3 ]; then
-  . "/mit/scripts/bin$scriptsdev/scripts-joomla"
-elif [ "$num" = 4 ]; then
-  . "/mit/scripts/bin$scriptsdev/scripts-e107"
-elif [ "$num" = 5 ]; then
-  . "/mit/scripts/bin$scriptsdev/scripts-gallery2"
-elif [ "$num" = 6 ]; then
-  . "/mit/scripts/bin$scriptsdev/scripts-phpbb"
-elif [ "$num" = 7 ]; then
-  . "/mit/scripts/bin$scriptsdev/scripts-advancedbook"
-elif [ "$num" = 8 ]; then
-  . "/mit/scripts/bin$scriptsdev/scripts-phpical"
-elif [ "$num" = 9 ]; then
-  . "/mit/scripts/bin$scriptsdev/scripts-trac"
+choice=`choices | sed -n "$num { s/ .*$//; p; }"`
+if [ -n "$choice" ]; then
+  . "/mit/scripts/bin$scriptsdev/scripts-$choice"
 else
   echo "ERROR:"
-  echo "You must enter a number 1 through 9."
+  echo "You must enter a number 1 through $nchoices."
   exit 1
 fi
