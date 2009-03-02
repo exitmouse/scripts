@@ -1,0 +1,75 @@
+#!/usr/bin/perl
+use strict;
+use lib '/mit/scripts/deploy/bin';
+use onserver;
+
+setup();
+
+print "\nEnter the code name for your project (a valid Python package name).\n";
+print "Do not use 'django' or the name of any other Python library.\n";
+print "Project name: ";
+my $name = <STDIN>;
+chomp $name;
+
+open FASTCGI, ">index.fcgi";
+print FASTCGI <<EOF;
+#!/usr/bin/env python
+import sys, os
+sys.path.insert(0, "/mit/$USER/Scripts/django")
+os.chdir("/mit/$USER/Scripts/django/$name")
+os.environ['DJANGO_SETTINGS_MODULE'] = "$name.settings"
+
+from django.core.servers.fastcgi import runfastcgi
+runfastcgi(method="threaded", daemonize="false")
+EOF
+close FASTCGI;
+chmod 0755, "index.fcgi";
+
+open HTACCESS, ">.htaccess";
+print HTACCESS <<EOF;
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)\$ index.fcgi/$1 [QSA,L]
+EOF
+close HTACCESS;
+chmod 0777, ".htaccess";
+
+chdir "/mit/$USER/Scripts/django/";
+system qw{django-admin.py startproject}, $name;
+chdir "$name";
+
+open SETTINGS, "settings.py";
+open NEWSETTINGS, "settings.py.new";
+while (<SETTINGS>) {
+  chomp;
+  if (/Your Name/) {
+    $_ = "    ('$USER', '$email'),\n";
+  } elsif (/^DATABASE_ENGINE/) {
+    $_ = "DATABASE_ENGINE = 'mysql'\n";
+  } elsif  (/^DATABASE_NAME/) {
+    $_ = "DATABASE_NAME = '$sqldb'\n";
+  } elsif (/^DATABASE_USER/) {
+    $_ = "DATABASE_USER = '$sqluser'\n";
+  } elsif (/^DATABASE_PASSWORD/) {
+    $_ = "DATABASE_PASSWORD = '$sqlpass'\n";
+  } elsif (/^DATABASE_HOST/) {
+    $_ = "DATABASE_HOST = '$sqlhost'\n";
+  } elsif (/Chicago/) {
+    $_ =~ s/Chicago/New_York/;
+  }
+  print NEWSETTINGS $_;
+}
+close NEWSETTINGS;
+close SETTNGS;
+rename "settings.py.new", "settings.py";
+
+print "\nDjango has been installed.\n\nYour project is located in:\n";
+print "  /mit/$USER/Scripts/django/$name/\n";
+print "To access manage.py, run 'ssh -k $USER\@scripts' and cd to the above directory.\n\n";
+print "When you edit your code, run the command\n";
+print "  touch /mit/$USER/web_scripts/$addrend/index.fcgi\n";
+print "before testing, to cause your site to reload the new code.\n";
+press_enter;
+
+exit 0;
