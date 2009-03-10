@@ -1,6 +1,6 @@
 #!/bin/sh
 
 sname="MediaWiki"
-deploy="mediawiki"
+deploy="mediawiki$scriptsstar"
 prompt_username=1
-. /mit/scripts/deploy$scriptsdev/bin/onathena
+. /mit/scripts/deploy$scriptsdev/bin/onathena$scriptsstar

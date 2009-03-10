@@ -1,6 +1,6 @@
 #!/bin/sh
 
 sname="WordPress"
-deploy="wordpress"
+deploy="wordpress$scriptsstar"
 prompt_password=0
-. /mit/scripts/deploy$scriptsdev/bin/onathena
+. /mit/scripts/deploy$scriptsdev/bin/onathena$scriptsstar
