@@ -1,0 +1,7 @@
+#!/bin/sh
+
+sname="TurboGears"
+deploy="turbogears"
+prompt_password=0
+create_scripts_dir=1
+. /mit/scripts/deploy$scriptsdev/bin/onathena
