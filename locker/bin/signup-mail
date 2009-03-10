@@ -8,8 +8,11 @@ if [ ! -d "/mit/$lname/mail_scripts/" ]; then
   fs sa /mit/$lname/mail_scripts system:anyuser l
   fs sa /mit/$lname/mail_scripts system:authuser none
   fs sa /mit/$lname/mail_scripts daemon.scripts read
-  sed /SCRIPTS_USER/s//$lname/ /mit/scripts/bin/procmailrc > /mit/$lname/mail_scripts/procmailrc
-#  echo -e ":0\n*\n! $USER@mit.edu" >/mit/$lname/mail_scripts/procmailrc
+  signupuser=`echo "$principal" | sed 's/@.*$//'`
+  sed /SCRIPTS_USER/s//$signupuser/ /mit/scripts/bin/procmailrc > /mit/$lname/mail_scripts/procmailrc
+  echo "By default, mail sent to $lname@scripts.mit.edu will be forwarded to"
+  echo "$signupuser@mit.edu.  You should edit /mit/$lname/mail_scripts/procmailrc"
+  echo "to change this and customize your procmail configuration."
   success "the mail script service" "The directory /mit/$lname/mail_scripts has been created."
 else
   success "the mail script service" "The directory /mit/$lname/mail_scripts already exists."
