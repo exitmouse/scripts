@@ -49,7 +49,7 @@ sub unpackPackage($$) {
   if ($?) { chdir($cwd); system("rmdir", "$dir"); die "Failed to unpack $package.tar.gz: $?"; }
   my @files=`athrun scripts gfind . -mindepth 1 -maxdepth 1 | grep -v .admin`;
   if (@files <= 1) {
-    `athrun scripts gfind . -mindepth 2 -maxdepth 2 | xargs -I{} mv \{} .`;
+    `athrun scripts gfind . -mindepth 2 -maxdepth 2 -exec mv \{} . \;`;
     rmdir($files[0]);
   }
   chdir($cwd) or die "Couldn't return to $cwd";
