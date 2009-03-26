@@ -1,0 +1,131 @@
+                                                                      2007-07-07
+The Decision-Making Policy of the scripts.mit.edu Project:
+
+We, the creators of the scripts.mit.edu infrastructure, wish to define a
+policy for how decisions of the scripts.mit.edu project will be reached in
+order to avoid confusion on this subject among future contributors to the
+project.  We particularly want to avoid a situation in which the
+leadership of the project is unclear after we leave MIT.
+
+In general, we believe that all contributors to the project should have a
+say in how the service is run in approximate proportion to their
+contributions.  We furthermore believe that strong agreement among the
+project's principal contributors is highly important to the project's
+future, and so, whenever possible, the project's principal contributors
+should reach near-unanimous agreement about how the project should
+proceed.  Ultimately, the decisions of a project of this nature need to be
+made by the people who are making the project happen.
+
+Unfortunately, reaching unanimous agreement among all of the contributors
+to the project might not always be possible.  This document establishes
+two leadership positions for the scripts.mit.edu project in order to
+entrust decision-making authority to specific individuals.  These leaders
+are ultimately entrusted with the project, although they are expected to
+take significant pause before using their authority to end a disagreement
+before consensus of the principal contributors has been reached.  These
+leadership positions are based in part on the roles of "producer" and
+"director" described in Frederick P. Brooks' _The Mythical Man-Month_.
+
+The "scripts team leader" is an MIT student who:
+- "assembles the team, divides the work, and establishes the schedule"
+- "acquires and keeps on acquiring the necessary resources"
+- "establishes the pattern of communication and reporting within the team"
+- "ensures that the schedule is met, shifting resources and organization
+  in order to respond to changing circumstances"
+
+The team leader is responsible for ensuring that the project continues to
+make regular progress.  The team leader is entrusted with arbitrating
+decisions regarding the organization of the scripts team and the focus of
+its ongoing development efforts.  For example, the team leader may remove
+individuals from the project who are deemed to be having an overall
+negative influence on the project.
+
+The "scripts architect" is an MIT student who:
+- "provides unity and conceptual integrity to the whole design"
+- "serves as a limit to system complexity"
+- "invents solutions for [large-scale technical problems] or shifts the
+  system design as required"
+
+The architect is responsible for ensuring the technical quality of the
+scripts.mit.edu service.  The architect is entrusted with arbitrating
+decisions regarding the scope, design, and operation of the service.  As
+the guardian of the technical integrity of the service, the architect may
+arbitrate all decisions regarding the project's production hardware and
+software.
+
+Both positions may select their own replacement, and, in the case of a
+vacancy, either position may select a replacement for the other position.
+Before an individual assumes either position as a replacement, that
+individual should be confirmed for that position by the SIPB Executive
+Committee.  A single individual may hold both positions simultaneously if
+every individual who has significantly contributed to the project within
+the last one calendar year agrees.  Any objections must occur before the
+Executive Committee has confirmed the appointment.
+
+The creator of the scripts.mit.edu project, Jeff Arnold, will serve as the
+first team leader and architect.
+
+Any part of the scripts.mit.edu decision-making policy may be modified as
+necessary by agreement between the scripts team leader and the scripts
+architect.  When changing the scripts.mit.edu decision-making policy, as
+with any major decision, near-unanimous agreement among the project's
+principal contributors should ideally be reached.
+
+The scripts.mit.edu project is affiliated with SIPB, and while the project
+remains affiliated with SIPB, the project will follow appropriate SIPB
+procedures for projects.
+
+This policy should be distributed to contributors to the project so that
+they may decide not to contribute if they are dissatisfied with it.
+
+
+
+
+
+
+					    ____________________________________
+									jbarnold
+
+
+
+
+
+
+					    ____________________________________
+								        presbrey
+
+
+
+
+
+
+					    ____________________________________
+ 			     					        hartmans
+
+
+As contributors to the scripts.mit.edu project, we have contributed to
+the creation of this written decision-making policy and we fully support it.
+
+
+
+
+
+
+					    ____________________________________
+			     					         tabbott
+
+
+
+
+
+
+					    ____________________________________
+			     					         andersk
+
+
+
+
+
+
+					    ____________________________________
+			    					          geofft

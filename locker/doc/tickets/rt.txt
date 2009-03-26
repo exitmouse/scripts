@@ -1,0 +1,28 @@
+RT TRICKS
+
+To edit stuff like ticket status, click "Basic" in the left.
+
+Note the multiple ways to search for tickets: you can click "All
+{new,open,waiting} Scripts Tickets" on the home page in the center, or
+"Scripts" on the right in the list of queues.
+
+You should take a look in "Preferences" at the left. Make sure "Notify
+yourself of own updates" is on. You can also set the "Default Working Queue"
+to Scripts, and give yourself a signature referring to scripts@mit.edu.
+Another useful option here is to set a password, so you don't need certs to
+log in (and so you can use the zephyrbot).
+
+The zephyrbot (currently down) will take commands to -c scripts -i [ticket
+number] of the form /set status=resolved or /set owner=geofft.
+
+You can also place these commands on a line by themselves inside e-mail; they
+will be acted upon and removed before the e-mail gets sent back out.
+
+Don't use the To field, it doesn't work. If you want to send the ticket somewhere else, use CC.
+
+Don't CC other RT queues, it doesn't work. If you really need to, use your
+e-mail client to forward it and remove the [help.mit.edu #nnn] tag.
+
+E-mail to scripts-comment that carries a [help.mit.edu #nnn] tag will be
+included in the ticket history for the scripts team to see, but will not be
+sent to the user. You can use this for asking "Help, what do I do here?"

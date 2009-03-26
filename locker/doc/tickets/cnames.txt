@@ -1,0 +1,74 @@
+HANDLING CNAME REQUESTS
+
+When someone e-mails scripts.mit.edu asking for a foo.mit.edu hostname:
+
+1. Check that the hostname is not currently in use. The commands
+     stella foo.mit.edu
+     athrun ops qy ghal foo.mit.edu \*
+   should both say the name is not in use. (The latter checks for aliases of
+   deleted or otherwise inactive hostnames that stella ignores.)
+
+   If the name is currently an alias of a name they own, make sure to forward
+   to jweiss the permission to move that name around.
+
+   If the name is the primary name of a machine they own, ask them what they
+   would like to rename the machine to, and make it clear that they'll need to
+   have another name associated with that IP address. Or (especially if the
+   machine doesn't ping) ask them to confirm they're no longer using that IP
+   address. If they're totally confused and keep insisting they want scripts
+   to serve that name, go ahead and tell them you'll rename the current foo to
+   foo-old.
+
+   If the name belongs to a deleted host on a dorm network, e-mail rccsuper to
+   reap it; they should do so quickly. If it belongs to an FSILG, e-mail
+   ht-$ILG-acl (ht-et-acl, ht-pika-acl, etc.) and ask nicely. If it belongs
+   to an academic network, they're not getting the name back unless they can
+   negotiate with the current owner of the name
+
+2. Check that they're requesting a scripts.mit.edu path that they control
+   (preferably, they'll give you a locker.scripts.mit.edu/something URL). If
+   they want a web.mit.edu path, you'll need to tell them to set up a redirect
+   according to http://scripts.mit.edu/faq/63/ in a directory in their
+   web_scripts, and ask them to tell us the directory. This doesn't block
+   requesting the hostname.
+
+   If they want something more outlandish, make sure they're not confused
+   before proceeding.
+
+3. E-mail jweiss.
+   * Open the ticket in RT
+   * Click 'Comment' to the right of the body of the e-mail they sent
+   * CC: jweiss@mit.edu (Don't use "To:", there's a bug)
+   * Write something nice. I typically use
+   Subject: scripts CNAME request: foo.mit.edu
+
+   At your convenience, please make foo.mit.edu an alias of scripts.mit.edu.
+       (or)
+   At your convenience, please move the alias foo.mit.edu from bar.mit.edu to
+     scripts.mit.edu.
+       (or)
+   At your convenience, please rename the current host foo.mit.edu to
+     foo-old.mit.edu and make foo.mit.edu an alias of scripts.mit.edu.
+       (or)
+   If the request below is sufficient authorization, please remove....
+
+   * Set Status => Waiting and Blocking On => Moira
+
+   Occasionally jweiss is on vacation; check /mit/ops/Pager.Schedule for
+   "!jweiss" entries. It's worth asking him ahead of time if he's around. If
+   not, see if zacheiss or cfox or computing-help will handle the requests.
+   (zacheiss has been willing to do them in the past.)
+
+4. Reply to the requestor (from either RT or your e-mail client), with
+   something like "We've forwarded the hostname request to IS&T; it should take
+   effect in 2-3 business days."
+
+5. After the name updates (jweiss replies, and DNS updates - which you can
+   check on -i dns), ask someone with root access to run
+
+   vhostadd foo.mit.edu
+
+6. Reply to the requestor again, and help them with stuff like MediaWiki URLs
+   or RewriteRules if they're having trouble.
+
+--geofft, last updated 2008-08-02

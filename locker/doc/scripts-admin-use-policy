@@ -1,0 +1,49 @@
+                                                                      2008-03-15
+                                                              amended 2008-08-05
+Policy on the Use of scripts.mit.edu Administrative Rights
+
+Users of scripts.mit.edu have a reasonable expectation that the data
+and code they store on our servers, and in sections of their locker
+accessible only by our servers, will not be improperly accessed or
+modified by anyone else, including by scripts.mit.edu maintainers.  To
+fulfill this expectation, we define a policy governing the
+maintainers’ use of special permissions and credentials held by our
+servers.  This includes any administrative access to the scripts
+servers, any use of private keys stored on the servers, and any use of
+scripts-specific permissions granted on locker directories.
+
+Such use of administrative rights shall only be permitted under any of
+the following circumstances.
+
+* Maintenance of the scripts.mit.edu service itself that is unrelated
+  to private user data.
+
+* Any access that is explicitly authorized by the owners of the data
+  in question.
+
+* Handling a user support request that cannot be satisfactorily answered
+  without resorting to using administrative rights. This access should
+  be restricted to only those files and resources that are strictly
+  necessary to fully answer the request.
+
+* Performing upgrades to autoinstalled software, using permissions
+  granted to the system:scripts-security-upd group.  This group is
+  normally empty, but the root instances of scripts maintainers will
+  be added when needed to perform upgrades, at the discretion of the
+  architect.
+
+* Modifications that are necessary for server security or reliability.
+  In this case, any modifications should be clearly marked and the
+  user should be contacted.
+
+* Ensuring that updates or planned updates to the scripts.mit.edu
+  service do not break existing user deployments.  In this case, any
+  modifications should be clearly marked and the user should be
+  contacted.
+
+[The third clause formerly read
+* Handling a user support request that can reasonably be considered an
+  implicit authorization for that use.  In this case, whenever
+  possible, any modifications should be reverted and the user should
+  be told how to make these modifications themselves.
+and was changed in August 2008.]
