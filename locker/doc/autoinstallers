@@ -1,0 +1,58 @@
+-*- text -*-
+
+== How to update an autoinstaller to a new version of the upstream package ==
+
+Things to check beforehand:
+- Make sure /mit/scripts/deploydev is up to date from /mit/scripts/deploy (deploydev is not a svn checkout and is probably missing changes from deploy)
+
+Steps:
+# Example values
+PKG=wordpress
+NEWVERS=2.5.1
+OLDVERS=2.3.3
+URL=http://www.example.com/download/wordpress-2.5.1.tar.gz
+
+# Create a new directory in /mit/scripts/deploydev for the new version
+mkdir /mit/scripts/deploydev/$PKG-$NEWVERS
+
+# Copy any scripts patches to the new directory
+cp /mit/scripts/deploydev/$PKG-$OLDVERS/*.patch /mit/scripts/deploydev/$PKG-$NEWVERS/
+# Some scripts might have other files in here
+# Make sure the patch is still relevant for the current version of the package
+
+# Download the new package from the upstream site
+wget -O /mit/scripts/deploydev/$PKG-$NEWVERS/$PKG-$NEWVERS.tar.gz "$URL"
+
+# Update the symlink for the new package version
+cd /mit/scripts/deploydev && ln -nsf $PKG-$NEWVERS/$PKG-NEWVERS.tar.gz $PKG.tar.gz
+
+# Try an autoinstall
+ssh linerva -t env SCRIPTSDEV=dev athrun scripts
+
+# Fix any bugs that were introduced, probably in /mit/scripts/deploydev/bin/$PKG or /mit/scripts/bin/scripts-$PKG, or the patches
+
+# Commit your changes by moving them to /mit/scripts/deploy
+cp -a /mit/scripts/deploydev/$PKG-NEWVERS /mit/scripts/deploydev/$PKG.tar.gz /mit/scripts/deploy/
+
+# Test the new version from linerva and athena.dialup
+
+
+== How to generate an autoupdate ==
+
+cd /tmp
+# Use --dev if you haven't pushed to deploy yet
+/mit/scripts/sbin/propose-update --dev $PKG $OLDVERS $NEWVERS
+cd $PKG-$OLDVERS-to-$NEWVERS.proposal
+# Look at the files that were generated to make sure they're sane
+# If necessary, add pre- and post- hooks
+emacs extra/prepatch.sh
+emacs extra/postpatch.sh
+# Generate the patch
+# --dev here means to put the update in /mit/scripts/deploydev/updates
+/mit/scripts/sbin/build-update --dev $PKG $OLDVERS $NEWVERS
+# Test the update by running cd /mit/foo/web_scripts/bar && /mit/scripts/deploydev/updates/$PKG-#OLDVERS-to-$NEWVERS/update 
+
+# If necessary, repeat this process. You can edit the files in the
+# $PKG-$OLDVERS and $PKG-$NEWVERS subdirectories of the proposal,
+# passing --redo-* options to propose-update as necessary to cause it
+# to regenerate the file lists from the subdirectories
