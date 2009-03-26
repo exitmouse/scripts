@@ -27,7 +27,7 @@ wget -O /mit/scripts/deploydev/$PKG-$NEWVERS/$PKG-$NEWVERS.tar.gz "$URL"
 cd /mit/scripts/deploydev && ln -nsf $PKG-$NEWVERS/$PKG-NEWVERS.tar.gz $PKG.tar.gz
 
 # Try an autoinstall
-ssh linerva -t env SCRIPTSDEV=dev athrun scripts
+ssh linerva -t env scriptsdev=dev athrun scripts
 
 # Fix any bugs that were introduced, probably in /mit/scripts/deploydev/bin/$PKG or /mit/scripts/bin/scripts-$PKG, or the patches
 
