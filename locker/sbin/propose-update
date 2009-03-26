@@ -49,16 +49,16 @@ sub unpackPackage($$) {
   if ($?) { chdir($cwd); system("rmdir", "$dir"); die "Failed to unpack $package.tar.gz: $?"; }
   my @files=`athrun scripts gfind . -mindepth 1 -maxdepth 1 | grep -v .admin`;
   if (@files <= 1) {
-    `athrun scripts gfind . -mindepth 2 -maxdepth 2 -exec mv \{} . \;`;
+    `athrun scripts gfind . -mindepth 2 -maxdepth 2 -exec mv {} . \\;`;
     rmdir($files[0]);
   }
   chdir($cwd) or die "Couldn't return to $cwd";
   print "done.\n";
 }
 
-my @oldfiles = sort { $a->[1] cmp $b->[1] } map { chomp; s|$olddir\/?||g; [split(' ', $_, 2)] } `athrun scripts gfind $olddir -type f | xargs -I{} md5sum \{}`;
+my @oldfiles = sort { $a->[1] cmp $b->[1] } map { chomp; s|$olddir\/?||g; [split(' ', $_, 2)] } `athrun scripts gfind $olddir -type f -exec md5sum {} \\;`;
 #print Dumper(\@oldfiles);
-my @newfiles = sort { $a->[1] cmp $b->[1] } map { chomp; s|$newdir\/?||g; [split(' ', $_, 2)] } `athrun scripts gfind $newdir -type f | xargs -I{} md5sum \{}`;
+my @newfiles = sort { $a->[1] cmp $b->[1] } map { chomp; s|$newdir\/?||g; [split(' ', $_, 2)] } `athrun scripts gfind $newdir -type f -exec md5sum {} \\;`;
 #print Dumper(\@newfiles);
 
 sub compareDirectories($$) {
