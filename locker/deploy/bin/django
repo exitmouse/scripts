@@ -40,25 +40,25 @@ system qw{django-admin.py startproject}, $name;
 chdir "$name";
 
 open SETTINGS, "settings.py";
-open NEWSETTINGS, "settings.py.new";
+open NEWSETTINGS, ">settings.py.new";
 while (<SETTINGS>) {
   chomp;
   if (/Your Name/) {
-    $_ = "    ('$USER', '$email'),\n";
+    $_ = "    ('$USER', '$email'),";
   } elsif (/^DATABASE_ENGINE/) {
-    $_ = "DATABASE_ENGINE = 'mysql'\n";
+    $_ = "DATABASE_ENGINE = 'mysql'";
   } elsif  (/^DATABASE_NAME/) {
-    $_ = "DATABASE_NAME = '$sqldb'\n";
+    $_ = "DATABASE_NAME = '$sqldb'";
   } elsif (/^DATABASE_USER/) {
-    $_ = "DATABASE_USER = '$sqluser'\n";
+    $_ = "DATABASE_USER = '$sqluser'";
   } elsif (/^DATABASE_PASSWORD/) {
-    $_ = "DATABASE_PASSWORD = '$sqlpass'\n";
+    $_ = "DATABASE_PASSWORD = '$sqlpass'";
   } elsif (/^DATABASE_HOST/) {
-    $_ = "DATABASE_HOST = '$sqlhost'\n";
+    $_ = "DATABASE_HOST = '$sqlhost'";
   } elsif (/Chicago/) {
     $_ =~ s/Chicago/New_York/;
   }
-  print NEWSETTINGS $_;
+  print NEWSETTINGS "$_\n";
 }
 close NEWSETTINGS;
 close SETTNGS;
