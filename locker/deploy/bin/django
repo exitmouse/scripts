@@ -57,12 +57,51 @@ while (<SETTINGS>) {
     $_ = "DATABASE_HOST = '$sqlhost'";
   } elsif (/Chicago/) {
     $_ =~ s/Chicago/New_York/;
+  } elsif (/^ADMIN_MEDIA_PREFIX/) {
+    $_ = "ADMIN_MEDIA_PREFIX = '/__scripts/django/media/'";
+  } elsif (/^INSTALLED_APPS/) {
+    print NEWSETTINGS "$_\n";
+    while (<SETTINGS>) {
+      if (/^\)/) {
+	print NEWSETTINGS "    'django.contrib.admin',\n";
+	print NEWSETTINGS "    'django.contrib.admindocs',\n";
+      }
+      print NEWSETTINGS $_;
+    }
   }
   print NEWSETTINGS "$_\n";
 }
 close NEWSETTINGS;
 close SETTNGS;
 rename "settings.py.new", "settings.py";
+
+open URLS, "urls.py";
+open NEWURLS, ">urls.py.new";
+while (<URLS>) {
+  chomp;
+  if (/^#.*from django\.contrib import admin/) {
+    $_ =~ s/^# *//;
+  } elsif (/^#.*admin.autodiscover/) {
+    $_ =~ s/^# *//;
+  } elsif (/^ *# *\(r\'\^admin\//) {
+    $_ =~ s/# *//;
+  }
+  print NEWURLS "$_\n";
+}
+close NEWURLS;
+close URLS;
+rename "urls.py.new", "urls.py";
+
+print "Initializing your project's SQL database schema...\n";
+system qw{./manage.py syncdb --noinput};
+print "...done\n";
+
+print "Creating your superuser account... ";
+system qw{./manage.py createsuperuser --username}, $admin_username, "--email", $email, "--noinput";
+print "done\n";
+print "Setting your superuser password... ";
+system qw{mysql -D}, "$USER+$addrlast", "-e", "UPDATE auth_user SET password=MD5(\'$admin_password\') WHERE username=\'$admin_username\'";
+print "done\n";
 
 print "\nDjango has been installed.\n\nYour project is located in:\n";
 print "  /mit/$USER/Scripts/django/$name/\n";

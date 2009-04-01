@@ -2,6 +2,6 @@
 
 sname="Django"
 deploy="django"
-prompt_password=0
+prompt_username=1
 create_scripts_dir=1
 . /mit/scripts/deploy$scriptsdev/bin/onathena
