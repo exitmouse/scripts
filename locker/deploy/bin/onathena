@@ -95,18 +95,18 @@ attach scripts 2>/dev/null
 
 echo
 echo "Your new copy of $sname will appear on the web at a URL"
-echo "that starts with http://scripts.mit.edu/~$lname/"
+echo "that starts with http://$lname.scripts.mit.edu/"
 echo "Please decide upon a complete URL and enter it below."
-echo "You must enter one or more characters after ~$lname/"
+echo "You must enter one or more characters after mit.edu/"
 echo "The completed address must only contain a-z, 0-9, and /."
-printf "Desired address: http://scripts.mit.edu/~$lname/"
+printf "Desired address: http://$lname.scripts.mit.edu/"
 read addrend
 
 addrend=`perl -0e 'print $ARGV[0] =~ /^([\w\/-]*[\w-])\/*$/' -- "$addrend"`
 if [ "$addrend" = "" ]; then
 	echo
 	echo "ERROR:"
-	echo "You must enter one or more characters after ~$lname/"
+	echo "You must enter one or more characters after mit.edu/"
 	echo "The completed address must only contain a-z, 0-9, and /."
 	exit 1
 fi
@@ -189,7 +189,7 @@ fs sa . system:anyuser none
 fs sa . system:authuser none
 fs sa . daemon.scripts write
 fs sa . system:scripts-security-upd write
-echo "This directory is used to store temporary files such as sessions. If you delete it, auto-installed packages will fail." > DO_NOT_DELETE.txt
+echo "This directory is necessary to store login sessions and other transient files for auto-installed packages from scripts.mit.edu." > DO_NOT_DELETE.txt
 mkdir -p "$lroot/web_scripts/$addrend"
 cd "$lroot/web_scripts/$addrend"
 fs sa . system:anyuser none
@@ -206,6 +206,8 @@ fi
 echo
 echo "Unpacking $sname... (this step might take several minutes)"
 
+# This version is deprecated, use create_scripts_dir instead
+
 if [ "$create_dir" = "" ]; then
   create_dir=0
 fi
@@ -218,7 +220,22 @@ if [ "$create_dir" -eq 1 ]; then
   fs sa "$lroot/scripts-$deploy" system:scripts-security-upd write
 fi
 
-athrun scripts gtar zxf "/mit/scripts/deploy$scriptsdev/$deploy.tar.gz"
+# This is the better version
+
+if [ "$create_scripts_dir" = "" ]; then
+  create_scripts_dir=0
+fi
+
+if [ "$create_scripts_dir" -eq 1 ]; then
+  mkdir -p "$lroot/Scripts/$deploy"
+  fs sa "$lroot/Scripts/$deploy" system:anyuser none
+  fs sa "$lroot/Scripts/$deploy" system:authuser none
+  fs sa "$lroot/Scripts/$deploy" daemon.scripts write
+  fs sa "$lroot/Scripts/$deploy" system:scripts-security-upd write
+fi
+
+# xavid: use p to keep the same permissions as in the file
+athrun scripts gtar zxpf "/mit/scripts/deploy$scriptsdev/$deploy.tar.gz"
 files=`athrun scripts gfind . -mindepth 1 -maxdepth 1 | grep -v .admin`
 numfiles=`echo "$files" | wc -l`
 if [ ! -z "$files" ]; then
@@ -241,7 +258,7 @@ checkfailed
 echo
 echo "== Installation complete! =="
 echo "You should now be able to access your new copy of $sname at"
-echo "http://scripts.mit.edu/~$lname/$addrend/"
+echo "http://$lname.scripts.mit.edu/$addrend/"
 echo "(You can replace the http with https if you want to use encryption)"
 echo "If you have trouble accessing it, feel free to contact"
 echo "the scripts.mit.edu team by e-mailing scripts@mit.edu"
