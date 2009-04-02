@@ -103,12 +103,12 @@ print "Setting your superuser password... ";
 system qw{mysql -D}, "$USER+$addrlast", "-e", "UPDATE auth_user SET password=MD5(\'$admin_password\') WHERE username=\'$admin_username\'";
 print "done\n";
 
-print "\nDjango has been installed. The setup is roughly what's described\n"
-print "in the shared-hosting section of\n"
-print "  http://docs.djangoproject.com/en/dev/howto/deployment/fastcgi/\n"
-print "We've also enabled the admin app. You can start from the 'Creating\n"
-print "models' step of the Django tutorial:\n"
-print "  http://docs.djangoproject.com/en/dev/intro/tutorial01/#id3\n\n"
+print "\nDjango has been installed. The setup is roughly what's described\n";
+print "in the shared-hosting section of\n";
+print "  http://docs.djangoproject.com/en/dev/howto/deployment/fastcgi/\n";
+print "We've also enabled the admin app. You can start from the 'Creating\n";
+print "models' step of the Django tutorial:\n";
+print "  http://docs.djangoproject.com/en/dev/intro/tutorial01/#id3\n\n";
 print "Your project is located in:\n";
 print "  /mit/$USER/Scripts/django/$name/\n";
 print "To access manage.py, run 'ssh -k $USER\@scripts' and cd to the above directory.\n\n";
