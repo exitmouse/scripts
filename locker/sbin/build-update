@@ -100,7 +100,7 @@ die () { echo "[$PWD] die: $1" >&2; rm .scripts-security-upd-lock; exit 1; }
 aiee () { echo "[$PWD] AIEE: $1" >&2; exit 2; }
 
 patchdir=$(dirname "$0")
-lockername="$1${1:-$USER}"
+lockername="${1:-$USER}"
 
 >.scripts-security-upd-lock || die "error: Unable to obtain update lock."
 
