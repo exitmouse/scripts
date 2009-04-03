@@ -50,7 +50,7 @@ emacs extra/postpatch.sh
 # Generate the patch
 # --dev here means to put the update in /mit/scripts/deploydev/updates
 /mit/scripts/sbin/build-update --dev $PKG $OLDVERS $NEWVERS
-# Test the update by running cd /mit/foo/web_scripts/bar && /mit/scripts/deploydev/updates/$PKG-#OLDVERS-to-$NEWVERS/update 
+# Test the update by running cd /mit/foo/web_scripts/bar && /mit/scripts/deploydev/updates/$PKG-#OLDVERS-to-$NEWVERS/update "foo"
 
 # If necessary, repeat this process. You can edit the files in the
 # $PKG-$OLDVERS and $PKG-$NEWVERS subdirectories of the proposal,

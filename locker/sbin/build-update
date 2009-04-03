@@ -96,9 +96,11 @@ printf SCRIPT <<'EOF', catfile("/afs/athena.mit.edu/contrib/scripts/deploy/", $o
 #!/bin/bash
 set -e -o noclobber
 
-die () { echo "$1" >&2; rm .scripts-security-upd-lock; exit 1; }
+die () { echo "[$PWD] die: $1" >&2; rm .scripts-security-upd-lock; exit 1; }
+aiee () { echo "[$PWD] AIEE: $1" >&2; exit 2; }
 
 patchdir=$(dirname "$0")
+lockername="$1${1:-$USER}"
 
 >.scripts-security-upd-lock || die "error: Unable to obtain update lock."
 
@@ -129,10 +131,10 @@ patch -stN --dry-run --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || die
 
 echo "[$PWD] dry run OK, applying update"
 
-mv .scripts-version .scripts-version.old
-patch -stN --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || :
-xargs rm -f <"$patchdir/files.delete"
-tar -xzf "$patchdir/newfiles.tar.gz"
+mv .scripts-version .scripts-version.old || aiee "Failed to back up scripts-version"
+patch -stN --no-backup-if-mismatch -p2 <"$patchdir/update.diff" || aiee "patch did not apply"
+xargs rm -f <"$patchdir/files.delete" || aiee "Failed to remove files"
+tar -xzf "$patchdir/newfiles.tar.gz" || aiee "Failed to extract new files"
 [ -e "$patchdir/extra/postpatch.sh" ] && . "$patchdir/extra/postpatch.sh"
 (
     cat .scripts-version.old
@@ -142,9 +144,9 @@ tar -xzf "$patchdir/newfiles.tar.gz"
     echo "$patchdir"
     echo "$newpackages"
 ) >.scripts-version
-rm -f .scripts-version.old
+rm -f .scripts-version.old || aiee "Failed to remove .scripts-version.old"
 
-rm -f .scripts-security-upd-lock
+rm -f .scripts-security-upd-lock || aiee "Failed to remove .scripts-security-upd-lock"
 
 echo "[$PWD] done"
 
