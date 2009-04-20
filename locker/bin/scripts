@@ -1,4 +1,30 @@
 #!/bin/sh
 
+choices () {
+    echo 'scripts-start Begin a Quick-Start autoinstall (wikis, blogs, etc.)'
+    echo 'signup-web Enable the web scripts service'
+    echo 'signup-cron Enable the cron scripts service'
+    echo 'signup-mail Enable the mail scripts service'
+    echo 'signup-sql Sign up for a sql.mit.edu account'
+}
+
+nchoices=`choices | wc -l`
+
+echo
+echo "Welcome to scripts.mit.edu. Which service would you like to use?"
+echo
+choices | sed 's/^[^ ]* //' | cat -n
+echo
+printf "Please enter a number 1-%d: " "$nchoices"
+read num
+echo
+
 attach scripts 2>/dev/null
-. /mit/scripts/bin/scripts-start
+choice=`choices | sed -n "$num { s/ .*$//; p; }"`
+if [ -n "$choice" ]; then
+  . "/mit/scripts/bin$scriptsdev/$choice"
+else
+  echo "ERROR:"
+  echo "You must enter a number 1 through $nchoices."
+  exit 1
+fi

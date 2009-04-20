@@ -1,6 +1,6 @@
 #!/bin/sh
 
-attach scripts
+attach -q scripts
 . /mit/scripts/bin$scriptsdev/signup-minimal
 
 if [ ! -d "/mit/$lname/cron_scripts/" ]; then
