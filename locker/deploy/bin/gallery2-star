@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use lib '/mit/scripts/deploy/bin';
-use onserver;
+use onserver_star;
 use File::Path
 
 setup();
