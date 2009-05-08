@@ -1,8 +1,7 @@
 #!/bin/sh
 
-scriptsstar="-star"
 sname="Gallery2"
-deploy="gallery2$scriptsstar"
+deploy="gallery2"
 prompt_username=1
 create_dir=1
 
