@@ -1,30 +1,202 @@
 #!/usr/bin/perl
 use strict;
 use lib '/mit/scripts/deploy/bin';
-use onserver;
+use onserver_star;
 use File::Path;
 
 setup();
 
+# Initial installation page
 fetch_uri(
-    'install/install.php',
-    {},
-    {lang => 'english',
-     dbms => 'mysql4',
-     upgrade => 0,
+    'install/index.php',
+    {mode => 'install',
+     language => 'en'},
+    {});
+print "Loaded initial installation page\n";
+
+# Requirements page
+fetch_uri(
+    'install/index.php',
+    {mode => 'install',
+     sub => 'requirements',
+     language => 'en'},
+    {});
+print "Loaded requirements page\n";
+
+# Database page
+fetch_uri(
+    'install/index.php',
+    {mode => 'install',
+     sub => 'database',
+     language => 'en'},
+    {img_imagick => '/usr/bin/'});
+print "Loaded database page\n";
+
+# Database again
+fetch_uri(
+    'install/index.php',
+    {mode => 'install',
+     sub => 'database'},
+    {dbms => 'mysql',
      dbhost => $sqlhost,
-     dbuser => $sqluser,
      dbname => $sqldb,
+     dbuser => $sqluser,
      dbpasswd => $sqlpass,
-     prefix => '',
-     board_email => $email,
-     server_name => $server,
-     server_port => 80,
-     script_path => "/~$USER/$addrend/",
+     table_prefix => '',
+     img_imagick => '/usr/bin/',
+     language => 'en',
+     testdb => 'true'});
+print "Loaded database page (part 2)\n";
+
+# Administrator page
+fetch_uri(
+    'install/index.php',
+    {mode => 'install',
+     sub => 'administrator'},
+    {img_imagick => '/usr/bin/',
+     language => 'en',
+     dbms => 'mysql',
+     dbhost => $sqlhost,
+     dbport => '',
+     dbname => $sqldb,
+     dbuser => $sqluser,
+     dbpasswd => $sqlpass,
+     table_prefix => ''});
+print "Loaded administrator page\n";
+
+# Administrator page again
+fetch_uri(
+    'install/index.php',
+    {mode => 'install',
+     sub => 'administrator'},
+    {default_lang => 'en',
      admin_name => $admin_username,
      admin_pass1 => $admin_password,
      admin_pass2 => $admin_password,
-     install_step => 1,
-     cur_lang => 'english'});
+     board_email1 => $email,
+     board_email2 => $email,
+     img_imagick => '/usr/bin/',
+     language => 'en',
+     dbms => 'mysql',
+     dbhost => $sqlhost,
+     dbport => '',
+     dbname => $sqldb,
+     dbuser => $sqluser,
+     dbpasswd => $sqlpass,
+     table_prefix => '',
+     check => 'true'});
+print "Loaded administrator page (part 2)\n";
 
-rmtree(['contrib', 'install']);
+# Config file page
+fetch_uri(
+    'install/index.php',
+    {mode => 'install',
+     sub => 'config_file'},
+    {img_imagick => '/usr/bin/',
+     default_lang => 'en',
+     admin_name => $admin_username,
+     admin_pass1 => $admin_password,
+     admin_pass2 => $admin_password,
+     board_email1 => $email,
+     board_email2 => $email,
+     language => 'en',
+     dbms => 'mysql',
+     dbhost => $sqlhost,
+     dbport => '',
+     dbname => $sqldb,
+     dbuser => $sqluser,
+     dbpasswd => $sqlpass,
+     table_prefix => ''});
+print "Loaded config file page\n";
+
+# Advanced page
+fetch_uri(
+    'install/index.php',
+    {mode => 'install',
+     sub => 'advanced'},
+    {img_imagick => '/usr/bin/',
+     language => 'en',
+     dbms => 'mysql',
+     dbhost => $sqlhost,
+     dbport => '',
+     dbname => $sqldb,
+     dbuser => $sqluser,
+     dbpasswd => $sqlpass,
+     table_prefix => '',
+     default_lang => 'en',
+     admin_name => $admin_username,
+     admin_pass1 => $admin_password,
+     admin_pass2 => $admin_password,
+     board_email1 => $email,
+     board_email2 => $email});
+print "Loaded advanced setup page\n";
+
+# Create database tables
+fetch_uri(
+    'install/index.php',
+    {mode => 'install',
+     sub => 'create_table'},
+    {email_enable => '1',
+     smtp_delivery => '0',
+     smtp_auth => 'PLAIN',
+     cookie_secure => '0',
+     force_server_vars => '0',
+     server_protocol => 'http://',
+     server_name => "$USER.scripts.mit.edu",
+     server_port => '80',
+     script_path => "/$addrend",
+     img_imagick => '/usr/bin/',
+     language => 'en',
+     dbms => 'mysql',
+     dbhost => $sqlhost,
+     dbport => '',
+     dbname => $sqldb,
+     dbuser => $sqluser,
+     dbpasswd => $sqlpass,
+     table_prefix => '',
+     default_lang => 'en',
+     admin_name => $admin_username,
+     admin_pass1 => $admin_password,
+     admin_pass2 => $admin_password,
+     board_email1 => $email,
+     board_email2 => $email});
+print "Loaded database table creation page\n";
+
+# Final page
+fetch_uri(
+    'install/index.php',
+    {mode => 'install',
+     sub => 'final'},
+    {language => 'en',
+     dbms => 'mysql',
+     dbhost => $sqlhost,
+     dbport => '',
+     dbuser => $sqluser,
+     dbpasswd => $sqlpass,
+     dbname => $sqldb,
+     table_prefix => '',
+     default_lang => 'en',
+     admin_name => $admin_username,
+     admin_pass1 => $admin_password,
+     admin_pass2 => $admin_password,
+     board_email1 => $email,
+     board_email2 => $email,
+     img_imagick => '/usr/bin/',
+     ftp_path => '',
+     ftp_user => '',
+     ftp_pass => '',
+     email_enable => '1',
+     smtp_delivery => '0',
+     smtp_host => '',
+     smtp_auth => 'PLAIN',
+     smtp_user => '',
+     smtp_pass => '',
+     cookie_secure => '0',
+     force_server_vars => '0',
+     server_protocol => 'http://',
+     server_name => "$USER.scripts.mit.edu",
+     server_port => '80',
+     script_path => "/$addrend"});
+print "Loaded installation finalization page\n";
+
+rmtree(['install']);
