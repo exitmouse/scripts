@@ -166,7 +166,6 @@ exec 3>&-
 if ! cmp -s "$htaccess" "$tmp_htaccess"; then
     if [ -s "$tmp_htaccess" ]; then
 	echo "Updating $htaccess" >&2
-	chmod 777 "$tmp_htaccess"
 	mv -f "$tmp_htaccess" "$htaccess"
     else
 	if [ -e "$htaccess" ]; then
@@ -180,7 +179,6 @@ trap - EXIT
 
 if [ $enable_auth -eq 1 ]; then
     if [ ! -e "$authuserfile" ]; then touch "$authuserfile"; fi
-    chmod 777 "$authuserfile"
     
     tmp_authuserfile=$authuserfile.webaccess-new
     trap 'rm -f "$tmp_authuserfile"' EXIT
@@ -215,7 +213,6 @@ if [ $enable_auth -eq 1 ]; then
     done
     
     exec 3>&-
-    chmod 777 "$tmp_authuserfile"
     mv -f "$tmp_authuserfile" "$authuserfile"
     trap - EXIT
     
