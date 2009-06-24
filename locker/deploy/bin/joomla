@@ -2,7 +2,6 @@
 use strict;
 use lib '/mit/scripts/deploy/bin';
 use onserver;
-use Cwd;
 use File::Path;
 
 setup();
@@ -12,31 +11,75 @@ print "Desired title: ";
 my $title = <STDIN>;
 chomp($title);
 
-fetch_uri(
-    'installation/install2.php',
-    {},
-    {DBhostname => $sqlhost,
-     DBuserName => $sqluser,
-     DBpassword => $sqlpass,
-     DBDel => 0,
-     DBname => $sqldb,
-     DBPrefix => 'jos_',
-     DBSample => 1});
+print "\nSetting up your configuration file...\n";
+open CONFIGTEMPLATE, "configuration.php-dist";
+open CONFIGURATION, ">configuration.php";
+while (<CONFIGTEMPLATE>) {
+  chomp;
+  if (/var \$sitename /) {
+    $_ = "	var \$sitename = '$title';";
+  } elsif (/var \$dbtype /) {
+    $_ = "	var \$dbtype = 'mysql';";
+  } elsif (/var \$host /) {
+    $_ = "	var \$host = '$sqlhost';";
+  } elsif (/var \$user /) {
+    $_ = "	var \$user = '$sqluser';";
+  } elsif (/var \$password /) {
+    $_ = "	var \$password = '$sqlpass';";
+  } elsif (/var \$db /) {
+    $_ = "	var \$db = '$sqldb';";
+  } elsif (/var \$dbprefix /) {
+    $_ = "	var \$dbprefix = 'jos_';";
+  } elsif (/var \$secret /) {
+    my $random = `dd if=/dev/urandom bs=1k count=1 | md5sum | cut -c1-32`;
+    $random =~ s/\n//;
+    $_ = "	var \$secret = '$random';";
+  } elsif (/var \$mailfrom /) {
+    $_ = "	var \$mailfrom = '$email';";
+  } elsif (/var \$fromname /) {
+    $_ = "	var \$fromname = '$title';";
+  }
+  print CONFIGURATION "$_\n";
+}
+close CONFIGURATION;
+close CONFIGTEMPLATE;
 
-fetch_uri(
-    'installation/install4.php',
-    {},
-    {DBhostname => $sqlhost,
-     DBuserName => $sqluser,
-     DBpassword => $sqlpass,
-     DBname => $sqldb,
-     DBPrefix => 'jos_',
-     sitename => $title,
-     siteUrl => $base_uri,
-     absolutePath => getcwd(),
-     adminEmail => $email,
-     adminPassword => $admin_password,
-     filePerms => 0,
-     dirPerms => 0});
+print "\nInitializing database schema...\n";
+my $schemafile = "installation/sql/mysql/joomla-real.sql";
+open SCHEMATEMPLATE, "installation/sql/mysql/joomla.sql";
+open SCHEMA, ">$schemafile";
+while (<SCHEMATEMPLATE>) {
+  if (/#__/) {
+    $_ =~ s/#__/jos_/g;
+  }
+  print SCHEMA "$_";
+}
+close SCHEMA;
+close SCHEMATEMPLATE;
+system("cat $schemafile | mysql $sqldb");
 
+print "\nLoading sample data...\n";
+my $sampledatafile = "installation/sql/mysql/sample_data-real.sql";
+open SAMPLETEMPLATE, "installation/sql/mysql/sample_data.sql";
+open SAMPLE, ">$sampledatafile";
+while (<SAMPLETEMPLATE>) {
+  if (/#__/) {
+    $_ =~ s/#__/jos_/g;
+  }
+  print SAMPLE "$_";
+}
+close SAMPLE;
+close SAMPLETEMPLATE;
+system("cat $sampledatafile | mysql $sqldb");
+
+print "\nCreating your admin account...\n";
+system("mysql -e \"INSERT INTO jos_users VALUES (62, 'Administrator', '$admin_username', '$email', MD5('$admin_password'), 'Super Administrator', 0, 1, 25, NOW(), NOW(), '', '')\" $sqldb");
+system("mysql -e \"INSERT INTO jos_core_acl_aro VALUES (10, 'users', '62', 0, 'Administrator', 0)\" $sqldb");
+system("mysql -e \"INSERT INTO jos_core_acl_groups_aro_map VALUES (25, '', 10)\" $sqldb");
+
+print "\nCleaning up installation tree...\n";
 rmtree('installation');
+
+print "\nDone!\n";
+exit 0;
+
