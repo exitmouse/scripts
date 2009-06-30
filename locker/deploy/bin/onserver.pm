@@ -8,6 +8,7 @@ use Socket;
 use Cwd qw(abs_path);
 use POSIX qw(strftime);
 use LWP::UserAgent;
+use IPC::Open2;
 use URI;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(setup totmp fetch_uri print_login_info press_enter $server $tmp $USER $HOME $sname $deploy $addrend $base_uri $ua $admin_username $requires_sql $addrlast $sqlhost $sqluser $sqlpass $sqldb $admin_password $scriptsdev $human $email);
@@ -126,14 +127,27 @@ sub setup {
     print "A copy of ${USER}'s SQL login info will be placed in\n/mit/$USER/web_scripts/$addrend.\n";
   }
   
-  open(VERSION, ">.scripts-version") or die "Can't write scripts-version file: $!\n";
-  print VERSION strftime("%F %T %z\n", localtime);
-  print VERSION $ENV{'USER'}, '@', getclienthostname(), "\n";
-  my $tarball = abs_path("/mit/scripts/deploy$scriptsdev/$deploy.tar.gz");
-  print VERSION $tarball, "\n";
-  $tarball =~ s|/deploydev/|/deploy/|;
-  print VERSION dirname($tarball), "\n";
-  close(VERSION);
+  if(-e "/mit/scripts/wizard$scriptsdev/srv/$deploy.git") {
+    # fake an empty commit to get version info
+    my $pid = open2(\*GIT_OUT, \*GIT_IN, "git commit-tree HEAD: -p HEAD") or die "Can't execute git process";
+    print GIT_IN "User autoinstalled application\n";
+    print GIT_IN "Installed-by: ", $ENV{'USER'}, '@', getclienthostname(), "\n";
+    close(GIT_IN);
+    my $hash=<GIT_OUT>;
+    chomp($hash);
+    close(GIT_OUT);
+    waitpid $pid, 0; # reap zombies
+    system("git reset $hash");
+  } else {
+    open(VERSION, ">.scripts-version") or die "Can't write scripts-version file: $!\n";
+    print VERSION strftime("%F %T %z\n", localtime);
+    print VERSION $ENV{'USER'}, '@', getclienthostname(), "\n";
+    my $tarball = abs_path("/mit/scripts/deploy$scriptsdev/$deploy.tar.gz");
+    print VERSION $tarball, "\n";
+    $tarball =~ s|/deploydev/|/deploy/|;
+    print VERSION dirname($tarball), "\n";
+    close(VERSION);
+  }
 
   select STDOUT;
   $| = 1; # STDOUT is *hot*!

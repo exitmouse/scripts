@@ -235,10 +235,20 @@ if [ "$create_scripts_dir" -eq 1 ]; then
 fi
 
 # xavid: use p to keep the same permissions as in the file
-if [ "$deploy" = "mediawiki" ]; then
+repo="/mit/scripts/wizard$scriptsdev/srv/$deploy.git"
+if [ -e "$repo" ]; then
   admin=`cat .admin`
   rm .admin
-  git clone --shared "/mit/scripts/wizard$scriptsdev/srv/$deploy.git" .
+  ls -Al
+  athrun git git init
+  echo "Deny from all" > ".git/.htaccess"
+  echo "$repo/objects" > ".git/objects/info/alternates"
+  athrun git git remote add origin "$repo"
+  athrun git git config branch.master.remote origin
+  athrun git git config branch.master.merge refs/heads/master
+  athrun git git fetch origin
+  athrun git git branch --track master origin/master
+  athrun git git checkout master
   echo "$admin" > .admin
 else
   athrun scripts gtar zxpf "/mit/scripts/deploy$scriptsdev/$deploy.tar.gz"
