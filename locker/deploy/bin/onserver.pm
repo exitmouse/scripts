@@ -4,6 +4,7 @@ use Exporter;
 use Sys::Hostname;
 use File::Spec::Functions;
 use File::Basename;
+use File::Copy;
 use Socket;
 use Cwd qw(abs_path);
 use POSIX qw(strftime);
@@ -15,7 +16,7 @@ our @EXPORT = qw(setup totmp fetch_uri print_login_info press_enter $server $tmp
 
 our $server = "scripts.mit.edu";
 
-our ($tmp, $USER, $HOME, $sname, $deploy, $addrend, $base_uri, $ua, $admin_username, $requires_sql, $addrlast, $sqlhost, $sqluser, $sqlpass, $sqldb, $admin_password, $scriptsdev, $human, $email);
+our ($tmp, $USER, $HOME, $lname, $sname, $deploy, $addrend, $base_uri, $ua, $admin_username, $requires_sql, $addrlast, $sqlhost, $sqluser, $sqlpass, $sqldb, $admin_password, $scriptsdev, $human, $email);
 
 $tmp = ".scripts-tmp";
 sub totmp {
@@ -78,7 +79,7 @@ sub setup {
   $USER = $ENV{USER};
   $HOME = $ENV{HOME};
   
-  ($sname, $deploy, $addrend, $admin_username, $requires_sql, $scriptsdev, $human) = @ARGV;
+  ($lname, $sname, $deploy, $addrend, $admin_username, $requires_sql, $scriptsdev, $human) = @ARGV;
   chdir "$HOME/web_scripts/$addrend";
   $email = "$human\@mit.edu";
   
@@ -121,6 +122,55 @@ sub setup {
     close ADMIN;
     unlink "$HOME/web_scripts/$addrend/.admin";
   } 
+
+  # This code was originally in onathena
+  my $repo = "/mit/scripts/wizard$scriptsdev/srv/$deploy.git";
+  if(-e $repo) {
+    # Much of this can be replaced with
+    # system("git", "clone", "--shared", $repo, ".");
+    # but only once we complete the FC11 transition and are running
+    # a version of Git more recent than 1.6.1 on all servers.
+    `git init`;
+    open HTACCESS, '>', '.git/.htaccess' or die $!;
+    print HTACCESS "Deny from all";
+    close HTACCESS;
+    open ALTERNATES, '>', '.git/objects/info/alternates' or die $!;
+    print ALTERNATES "$repo/objects";
+    close ALTERNATES;
+    system("git", "remote", "add", "origin", $repo);
+    `git config branch.master.remote origin`;
+    `git config branch.master.merge refs/heads/master`;
+    `git fetch origin`;
+    `git branch --track master origin/master`;
+    system("git checkout master"); # to get output
+  } else {
+    system("tar", "zxpf", "/mit/scripts/deploy$scriptsdev/$deploy.tar.gz");
+    my @files = glob("* .*"); # You /don't/ want to match dotfiles
+    if (@files == 3) {
+      chdir $files[0] or die $!;
+      for (glob("{,.??}*")) {
+        move($_, catfile("..", $_)) || die $!;
+      }
+      chdir ".."
+    }
+    rmdir $files[0];
+  }
+  if(-f "/mit/scripts/deploy$scriptsdev/php.ini/$deploy") {
+    # Copy in PHP file,  perform substitutions, and make symlinks
+    # to php.ini in all subdirectories
+    my $nodot = $lname; $nodot =~ s/\.//;
+    open(PHPIN, "/mit/scripts/deploy$scriptsdev/php.ini/$deploy") || die $!;
+    open(PHPOUT, ">", "php.ini") || die $!;
+    while(<PHPIN>) {
+      s/SCRIPTS_USER/$lname/;
+      s/SCRIPTS_NODOT/$nodot/;
+      print PHPOUT $_ or die $!;
+    }
+    close(PHPOUT) || die $!;
+    close(PHPIN) || die $!;
+    # athrun doesn't exist on scripts.  But find exists!  Use alternate script
+    system("/mit/scripts/bin/fix-php-ini-scripts");
+  }
 
   print "\nConfiguring $sname...\n";
   if($requires_sql) {

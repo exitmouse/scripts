@@ -234,41 +234,9 @@ if [ "$create_scripts_dir" -eq 1 ]; then
   fs sa "$lroot/Scripts/$deploy" system:scripts-security-upd write
 fi
 
-# xavid: use p to keep the same permissions as in the file
-repo="/mit/scripts/wizard$scriptsdev/srv/$deploy.git"
-if [ -e "$repo" ]; then
-  admin=`cat .admin`
-  rm .admin
-  ls -Al
-  athrun git git init
-  echo "Deny from all" > ".git/.htaccess"
-  echo "$repo/objects" > ".git/objects/info/alternates"
-  athrun git git remote add origin "$repo"
-  athrun git git config branch.master.remote origin
-  athrun git git config branch.master.merge refs/heads/master
-  athrun git git fetch origin
-  athrun git git branch --track master origin/master
-  athrun git git checkout master
-  echo "$admin" > .admin
-else
-  athrun scripts gtar zxpf "/mit/scripts/deploy$scriptsdev/$deploy.tar.gz"
-  files=`athrun scripts gfind . -mindepth 1 -maxdepth 1 | grep -v .admin`
-  numfiles=`echo "$files" | wc -l`
-  if [ ! -z "$files" ]; then
-      if [ "$numfiles" -eq 1 ]; then
-          athrun scripts gfind . -mindepth 2 -maxdepth 2 | xargs -i mv \{} .
-          rmdir "$files"
-      fi
-  fi
-fi
-if [ -f "/mit/scripts/deploy$scriptsdev/php.ini/$deploy" ]; then
-	nodot=`echo "$lname" | sed "/\./s///"`;
-	sed -e "/SCRIPTS_USER/ s//$lname/" -e "/SCRIPTS_NODOT/ s//$nodot/" "/mit/scripts/deploy$scriptsdev/php.ini/$deploy" > php.ini
-	athrun scripts gfind . -mindepth 1 -type d -exec sh -c 'ln -sf "`echo "$1" | sed '\''s,[^/],,g; s,/,../,g'\''`php.ini" "$1/"' -- {} \;
-fi
 cd "$origdir"
 
-vsshrun "deploy$scriptsdev/bin/$deploy" "$sname" "$deploy" "$addrend" "$admin_username" "$requires_sql" "$scriptsdev" "$USER" || die "Unknown failure during configuration"
+vsshrun "deploy$scriptsdev/bin/$deploy" "$lname" "$sname" "$deploy" "$addrend" "$admin_username" "$requires_sql" "$scriptsdev" "$USER" || die "Unknown failure during configuration"
 rm -f "$lroot/web_scripts/$addrend/.scripts-tmp"
 checkfailed
 
