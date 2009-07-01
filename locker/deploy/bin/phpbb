@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use strict;
-use lib '/mit/scripts/deploy/bin';
+use FindBin qw($Bin);
+use lib $Bin;
 use onserver_star;
 use File::Path;
 
