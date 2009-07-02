@@ -124,7 +124,7 @@ sub setup {
   } 
 
   # This code was originally in onathena
-  my $repo = "/mit/scripts/wizard$scriptsdev/srv/$deploy.git";
+  my $repo = "/mit/scripts/git/autoinstalls$scriptsdev/$deploy.git";
   if(-e $repo) {
     # Much of this can be replaced with
     # system("git", "clone", "--shared", $repo, ".");
@@ -177,7 +177,7 @@ sub setup {
     print "A copy of ${USER}'s SQL login info will be placed in\n/mit/$USER/web_scripts/$addrend.\n";
   }
   
-  if(-e "/mit/scripts/wizard$scriptsdev/srv/$deploy.git") {
+  if(-e $repo) {
     # fake an empty commit to get version info
     my $pid = open2(\*GIT_OUT, \*GIT_IN, "git commit-tree HEAD: -p HEAD") or die "Can't execute git process";
     print GIT_IN "User autoinstalled application\n";
