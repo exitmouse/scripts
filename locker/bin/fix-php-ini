@@ -7,7 +7,7 @@
 
 if [ -f php.ini ]; then
 	echo "Creating php.ini symlinks in child directories..."
-	athrun scripts gfind . -mindepth 1 -type d -exec sh -c 'ln -sf "`echo "$1" | sed '\''s,[^/],,g; s,/,../,g'\''`php.ini" "$1/"' -- {} \;
+	athrun scripts gfind . -mindepth 1 -type d -not -name .svn -not -name .git -exec sh -c 'ln -sf "`echo "$1" | sed '\''s,[^/],,g; s,/,../,g'\''`php.ini" "$1/"' -- {} \;
 	echo "Done!"
 else
 	echo "There is no php.ini file in this directory.  You should first"
