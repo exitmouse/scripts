@@ -132,9 +132,9 @@ sub setup {
     # a version of Git more recent than 1.6.1 on all servers.
     `git init`;
     open HTACCESS, '>', '.git/.htaccess' or die $!;
-    print HTACCESS "Deny from all";
+    print HTACCESS "Deny from all\n";
     close HTACCESS;
-    open ALTERNATES, '>', '.git/objects/info/alternates' or die $!;
+    open ALTERNATES, '>', ".git/objects/info/alternates" or die $!;
     print ALTERNATES "$repo/objects";
     close ALTERNATES;
     system("git", "remote", "add", "origin", $repo);
@@ -180,7 +180,7 @@ sub setup {
   if(-e $repo) {
     # fake an empty commit to get version info
     my $pid = open2(\*GIT_OUT, \*GIT_IN, "git commit-tree HEAD: -p HEAD") or die "Can't execute git process";
-    print GIT_IN "User autoinstalled application\n";
+    print GIT_IN "User autoinstalled application\n\n";
     print GIT_IN "Installed-by: ", $ENV{'USER'}, '@', getclienthostname(), "\n";
     close(GIT_IN);
     my $hash=<GIT_OUT>;
