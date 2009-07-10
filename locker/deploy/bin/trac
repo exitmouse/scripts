@@ -37,7 +37,7 @@ chomp($repopath);
 
 print STDERR "running trac-admin:\n";
 system(qw(/usr/bin/trac-admin tracdata initenv),
-       $name, $dbstring, $repotype, $repopath, '/usr/share/trac/templates');
+       $name, $dbstring, $repotype, $repopath);
 # XXX this exposes the SQL password on the command line
 
 #aka perl -pe 's/\@ADDREND\@/$addrend/g' <.htaccess.in >.htaccess
