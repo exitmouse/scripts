@@ -122,9 +122,6 @@ print "  http://docs.djangoproject.com/en/dev/intro/tutorial01/#id3\n\n";
 print "Your project is located in:\n";
 print "  /mit/$USER/Scripts/django/$name/\n";
 print "To access manage.py, run 'ssh -k $USER\@scripts' and cd to the above directory.\n\n";
-print "When you edit your code, run the command\n";
-print "  touch /mit/$USER/web_scripts/$addrend/index.fcgi\n";
-print "before testing, to cause your site to reload the new code.\n";
 press_enter;
 
 exit 0;
