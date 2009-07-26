@@ -21,10 +21,10 @@ os.chdir("/mit/$USER/Scripts/django/$name")
 os.environ['DJANGO_SETTINGS_MODULE'] = "$name.settings"
 
 def reloader_thread():
-    while True:
-        if django.utils.autoreload.code_changed():
-	    os._exit(3)
-	time.sleep(1)
+  while True:
+    if django.utils.autoreload.code_changed():
+      os._exit(3)
+    time.sleep(1)
 t = threading.Thread(target=reloader_thread)
 t.daemon = True
 t.start()
@@ -73,8 +73,8 @@ while (<SETTINGS>) {
     print NEWSETTINGS "$_\n";
     while (<SETTINGS>) {
       if (/^\)/) {
-	print NEWSETTINGS "    'django.contrib.admin',\n";
-	print NEWSETTINGS "    'django.contrib.admindocs',\n";
+        print NEWSETTINGS "    'django.contrib.admin',\n";
+        print NEWSETTINGS "    'django.contrib.admindocs',\n";
       }
       print NEWSETTINGS $_;
     }
