@@ -56,8 +56,8 @@ while (<FILE>) {
     my ($user, $homedir) = /^([^ ]*) (.*)$/;
     my $f=fork;
     if(defined ($f) and $f==0) {
-        if ($homedir !~ m|^/afs/athena|) {
-            print "ignoring non-athena-cell $user $homedir\n";
+        if ($homedir !~ m|^/afs/athena| && $homedir !~ m|^/afs/sipb| && $homedir !~ m|^/afs/zone|) {
+            print "ignoring foreign-cell $user $homedir\n";
             exit(0);
         }
 	print "$user\n";
