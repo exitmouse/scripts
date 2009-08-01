@@ -27,9 +27,15 @@ sub updatable ($) {
     return 0;
 }
 
-sub version ($) {
+sub old_version ($) {
     my $dirname = shift;
     open my $h, "$dirname/.scripts-version";
+    return (<$h>)[-1];
+}
+
+sub version ($) {
+    my $dirname = shift;
+    open my $h, "$dirname/.scripts/version";
     return (<$h>)[-1];
 }
 
@@ -37,16 +43,20 @@ sub find ($$) {
     my $user = shift;
     my $homedir = shift;
 
-    open my $files, "find $homedir/web_scripts -xdev -name .scripts-version 2>/dev/null |";
+    open my $files, "find $homedir/web_scripts -xdev -name .scripts-version -o -name .scripts 2>/dev/null |";
     open my $out, ">$dump/$user";
     while (my $f = <$files>) {
         chomp $f;
-        $f =~ s!/\.scripts-version$!!;
+        my $old_style;
+        $old_style = ($f =~ s!/\.scripts-version$!!);
+        if (! $old_style) {
+            $f =~ s!/\.scripts$!!;
+        }
         if (! updatable($f)) {
             print STDERR "not updatable: $f";
             next;
         }
-        $v = version($f);
+        $v = $old_style ? old_version($f) : version($f);
         print $out "$f:$v";
     }
     return 0;
