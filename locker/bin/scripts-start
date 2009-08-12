@@ -12,6 +12,7 @@ choices () {
     echo 'trac Trac'
     echo 'turbogears TurboGears'
     echo 'django Django'
+    echo 'rails Ruby on Rails'
 }
 
 nchoices=`choices | wc -l`
