@@ -1,0 +1,119 @@
+#!/usr/bin/perl
+use strict;
+use FindBin qw($Bin);
+use lib $Bin;
+use onserver;
+use Tie::File;
+
+setup();
+
+sub make_db {
+    my($type) = @_;
+    print "\nCreating $type SQL database for $sname...\n";
+    open GETPWD, '-|', "/mit/scripts/sql/bin$scriptsdev/get-password";
+    ($sqlhost, $sqluser, $sqlpass) = split(/\s/, <GETPWD>);
+    close GETPWD;
+    open SQLDB, '-|', "/mit/scripts/sql/bin$scriptsdev/get-next-database", "${addrlast}_${type}";
+    $sqldb = <SQLDB>;
+    close SQLDB;
+    open SQLDB, '-|', "/mit/scripts/sql/bin$scriptsdev/create-database", $sqldb;
+    $sqldb = <SQLDB>;
+    close SQLDB;
+    if($sqldb eq "") {
+        print "\nERROR:\n";
+        print "Your SQL account failed to create a SQL database.\n";
+        print "You should log in at http://sql.mit.edu to check whether\n";
+        print "your SQL account is at its database limit or its storage limit.\n";
+        print "If you cannot determine the cause of the problem, please\n";
+        print "feel free to contact sql\@mit.edu for assistance.\n";
+        open FAILED, ">.failed";
+        close FAILED;
+        exit 1;
+    }
+    return $sqldb;
+}
+
+my $dev_db = make_db("development");
+my $test_db = make_db("test");
+my $prod_db = make_db("production");
+
+system qw{rails -D -d mysql .};
+
+open PUBLIC_HTACCESS, ">public/.htaccess";
+print PUBLIC_HTACCESS <<EOF;
+# General Apache options
+Options +FollowSymLinks +ExecCGI
+
+# If you don't want Rails to look in certain directories,
+# use the following rewrite rules so that Apache won't rewrite certain requests
+#
+# Example:
+#   RewriteCond %{REQUEST_URI} ^/notrails.*
+#   RewriteRule .* - [L]
+
+# Redirect all requests not available on the filesystem to Rails
+# By default the cgi dispatcher is used which is very slow
+#
+# For better performance replace the dispatcher with the fastcgi one
+#
+# Example:
+#   RewriteRule ^(.*)\$ dispatch.fcgi [QSA,L]
+RewriteEngine On
+
+# If your Rails application is accessed via an Alias directive,
+# then you MUST also set the RewriteBase in this htaccess file.
+#
+# Example:
+#   Alias /myrailsapp /path/to/myrailsapp/public
+#   RewriteBase /myrailsapp
+
+RewriteRule ^\$ index.html [QSA]
+RewriteRule ^([^.]+)\$ \$1.html [QSA]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)\$ dispatch.fcgi [QSA,L]
+
+# In case Rails experiences terminal errors
+# Instead of displaying this message you can supply a file here which will be rendered instead
+#
+# Example:
+#   ErrorDocument 500 /500.html
+
+RewriteBase /$addrend/public/
+EOF
+
+open HTACCESS, ">.htaccess";
+print HTACCESS <<EOF;
+RewriteEngine On
+RewriteRule ^(.*)\$ public/\$1 [QSA,L]
+RewriteBase /$addrend/
+EOF
+
+tie my @railsenv, 'Tie::File', 'config/environment.rb';
+unshift @railsenv, "ENV['RAILS_RELATIVE_URL_ROOT'] = \"/$addrend\"";
+untie @railsenv;
+
+tie my @railsdb, 'Tie::File', 'config/database.yml';
+for (@railsdb) {
+    s/username:.*$/username: $sqluser/;
+    s/password:.*$/password: $sqlpass/;
+    s/host:.*$/host: $sqlhost/;
+    s/database:.*_development.*/database: $dev_db/;
+    s/database:.*_test.*/database: $test_db/;
+    s/database:.*_production.*/database: $prod_db/;
+}
+untie @railsdb;
+
+tie my @railswelcome, 'Tie::File', 'public/index.html';
+for (@railswelcome) {
+    s/Create your database/Sync your database/;
+    s/to create your database\..*/to create tables in your database.<\/p>/;
+}
+untie @railswelcome;
+
+print "Your application is located in:\n";
+print "  /mit/$USER/web_scripts/$addrend/\n";
+print "To run programs like rake or script/generate, run\n";
+print "  'ssh -k $USER\@scripts' and cd to the above directory.\n\n";
+press_enter;
+
+exit 0;

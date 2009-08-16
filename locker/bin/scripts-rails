@@ -1,0 +1,9 @@
+#!/bin/sh
+
+sname="Ruby on Rails"
+deploy="rails"
+prompt_password=0
+# The following is sort of a lie.  Rails wants three databases (dev/test/prod),
+# so the rails script will handle it manually.
+requires_sql=0
+. /mit/scripts/deploy$scriptsdev/bin/onathena
