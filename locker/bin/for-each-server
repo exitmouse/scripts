@@ -1,4 +1,14 @@
 #!/bin/sh
-for server in `finger @scripts.mit.edu | tail -n +5 | sed -n "s/  -> \([^:]*\):.*/\1/p" | sort -u`; do
+
+case `machtype` in
+    linux)
+        TAIL_ARG="-n"
+	;;
+    *)
+        TAIL_ARG=""
+	;;
+esac
+
+for server in `finger @scripts.mit.edu | tail ${TAIL_ARG} +5 | sed -n "s/  -> \([^:]*\):.*/\1/p" | sort -u`; do
     ssh "$server" "$@"
 done
