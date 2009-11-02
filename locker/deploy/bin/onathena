@@ -14,14 +14,15 @@ die() {
   echo "Please contact scripts@mit.edu and provide a copy of the output of this installer."
   exit 1
 }
-  
+
+attach scripts
 
 sshrun() {
-  athrun scripts scripts-ssh "$lname" "/mit/scripts/$@" 2>/dev/null
+  /afs/athena.mit.edu/contrib/scripts/bin$scriptsdev/scripts-ssh "$lname" "/mit/scripts/$@" 2>/dev/null
 }
 
 vsshrun() {
-  athrun scripts scripts-ssh "$lname" "/mit/scripts/$@"
+  /afs/athena.mit.edu/contrib/scripts/bin$scriptsdev/scripts-ssh "$lname" "/mit/scripts/$@"
 }
 
 checksqlpass() {
