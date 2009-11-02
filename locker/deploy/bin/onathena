@@ -202,7 +202,7 @@ if [ "$create_scripts_dir" -eq 1 ]; then
 fi
 
 if [ "$wizard" != "" ]; then
-  vsshrun "wizard/bin/wizard" "install" "$wizard" "$lroot/web_scripts/$addrend"
+  vsshrun "wizard/bin/wizard" "install" "$@" "$wizard" "$lroot/web_scripts/$addrend"
   exit 0
 fi
 
