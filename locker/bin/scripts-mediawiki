@@ -3,4 +3,5 @@
 sname="MediaWiki"
 deploy="mediawiki$scriptsstar"
 prompt_username=1
+wizard="mediawiki"
 . /mit/scripts/deploy$scriptsdev/bin/onathena$scriptsstar
