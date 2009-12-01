@@ -22,8 +22,8 @@ When someone e-mails scripts.mit.edu asking for a foo.mit.edu hostname:
    If the name belongs to a deleted host on a dorm network, e-mail rccsuper to
    reap it; they should do so quickly. If it belongs to an FSILG, e-mail
    ht-$ILG-acl (ht-et-acl, ht-pika-acl, etc.) and ask nicely. If it belongs
-   to an academic network, they're not getting the name back unless they can
-   negotiate with the current owner of the name
+   to an academic network, they're not getting even deleted names back unless
+   they can negotiate with the current owner of the name.
 
 2. Check that they're requesting a scripts.mit.edu path that they control
    (preferably, they'll give you a locker.scripts.mit.edu/something URL). If
@@ -34,6 +34,9 @@ When someone e-mails scripts.mit.edu asking for a foo.mit.edu hostname:
 
    If they want something more outlandish, make sure they're not confused
    before proceeding.
+
+   Confirm that they're signed up for scripts. http://locker.scripts.mit.edu/
+   should give something that isn't the "Account unknown" page.
 
 3. E-mail jweiss.
    * Open the ticket in RT
@@ -54,8 +57,8 @@ When someone e-mails scripts.mit.edu asking for a foo.mit.edu hostname:
 
    * Set Status => Waiting and Blocking On => Moira
 
-   Occasionally jweiss is on vacation; check /mit/ops/Pager.Schedule for
-   "!jweiss" entries. It's worth asking him ahead of time if he's around. If
+   Occasionally jweiss is on vacation; generally he sets an auto-responder,
+   so you can just try emailing him and hoping, or ask him if he's around. If
    not, see if zacheiss or cfox or computing-help will handle the requests.
    (zacheiss has been willing to do them in the past.)
 
@@ -71,4 +74,4 @@ When someone e-mails scripts.mit.edu asking for a foo.mit.edu hostname:
 6. Reply to the requestor again, and help them with stuff like MediaWiki URLs
    or RewriteRules if they're having trouble.
 
---geofft, last updated 2008-08-02
+--geofft with minor edits by adehnert, last updated 2009-12-01
