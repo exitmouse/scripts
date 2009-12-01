@@ -42,16 +42,26 @@ When someone e-mails scripts.mit.edu asking for a foo.mit.edu hostname:
    * Open the ticket in RT
    * Click 'Comment' to the right of the body of the e-mail they sent
    * CC: jweiss@mit.edu (Don't use "To:", there's a bug)
-   * Write something nice. I typically use
+   * Write something nice, preferably including the stella command line.
+   I typically use
    Subject: scripts CNAME request: foo.mit.edu
 
-   At your convenience, please make foo.mit.edu an alias of scripts.mit.edu.
+   At your convenience, please make foo.mit.edu an alias of scripts-vhosts.mit.edu.
+
+   stella scripts-vhosts -a foo
        (or)
    At your convenience, please move the alias foo.mit.edu from bar.mit.edu to
-     scripts.mit.edu.
+     scripts-vhosts.mit.edu.
+
+   stella bar -d foo
+   stella scripts-vhosts -a foo
        (or)
    At your convenience, please rename the current host foo.mit.edu to
-     foo-old.mit.edu and make foo.mit.edu an alias of scripts.mit.edu.
+   foo-old.mit.edu and mark it as deleted, and make foo.mit.edu an
+   alias of scripts-vhosts.mit.edu.
+
+   stella foo -S 3 -R foo-old
+   stella scripts-vhosts -a foo
        (or)
    If the request below is sufficient authorization, please remove....
 
