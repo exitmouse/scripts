@@ -9,11 +9,16 @@ Note the multiple ways to search for tickets: you can click "All
 You should take a look in "Preferences" at the left. Make sure "Notify
 yourself of own updates" is on. You can also set the "Default Working Queue"
 to Scripts, and give yourself a signature referring to scripts@mit.edu.
-Another useful option here is to set a password, so you don't need certs to
-log in (and so you can use the zephyrbot).
 
-The zephyrbot (currently down) will take commands to -c scripts -i [ticket
-number] of the form /set status=resolved or /set owner=geofft.
+Another useful option here is to set a password, so you don't need certs to log
+in (and so you can use the zephyrbot).  The zephyrbot will take commands to -c
+scripts -i [ticket number] of the form /set status=resolved or /set
+owner=geofft.  You need to drop a file in /mit/geofft/web_scripts/rt/rt-passwords
+by your username with the format:
+
+"username" "yourawesomepassword"
+
+And then ask geofft (zwrite geofft) to restart the RT bot.
 
 You can also place these commands on a line by themselves inside e-mail; they
 will be acted upon and removed before the e-mail gets sent back out.
