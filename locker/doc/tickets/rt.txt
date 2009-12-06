@@ -20,6 +20,11 @@ by your username with the format:
 
 And then ask geofft (zwrite geofft) to restart the RT bot.
 
+The RT bot will post ticket notifications as -c scripts -i nnn.  If you are
+responding to a ticket, it is conventional to post "lock" to the appropriate
+instance, so others know not to pre-empt you.  You should post "unlock" once
+you are done handling the ticket.
+
 You can also place these commands on a line by themselves inside e-mail; they
 will be acted upon and removed before the e-mail gets sent back out.
 
