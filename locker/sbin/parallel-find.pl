@@ -2,13 +2,32 @@
 
 # Script to help generate find the .scripts-version files
 
+use LockFile::Simple qw(trylock unlock);
+
 use lib '/mit/scripts/sec-tools/perl';
 
 open(FILE, "</mit/scripts/sec-tools/store/scriptslist");
 my $dump = "/mit/scripts/sec-tools/store/versions";
+my $dumpbackup = "/mit/scripts/sec-tools/store/versions-backup";
 
-(! -e $dump) || die "Output directory exists: $dump";
-system("mkdir", $dump) && die;
+# try to grab a lock on the version directory
+trylock($dump) || die "Can't acquire lock on $dump .  Another parallel-find may be running.  If you are SURE there is not, remove the lock file and retry.";
+
+sub unlock_and_die ($) {
+    my $msg = shift;
+    unlock($dump);
+    die $msg;
+}
+
+# if the versions directory exists, move it to versions-backup
+# (removing the backup directory if necessary).  Then make a new copy.
+if (-e $dump){
+    if (-e $dumpbackup){
+        system("rm -rf $dumpbackup") && unlock_and_die "Can't remove old backup directory $dumpbackup";
+    }
+    system("mv", $dump, $dumpbackup) && unlock_and_die "Unable to back up current directory $dump";
+}
+system("mkdir", $dump) && unlock_and_die;
 
 use Proc::Queue size => 40, debug => 0, trace => 0;
 use POSIX ":sys_wait_h"; # imports WNOHANG
@@ -77,3 +96,6 @@ while (<FILE>) {
     }
     1 while waitpid(-1, WNOHANG)>0; # avoids memory leaks in Proc::Queue
 }
+
+unlock($dump);
+1;
