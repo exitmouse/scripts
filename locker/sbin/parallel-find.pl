@@ -27,7 +27,7 @@ if (-e $dump){
     }
     system("mv", $dump, $dumpbackup) && unlock_and_die "Unable to back up current directory $dump";
 }
-system("mkdir", $dump) && unlock_and_die;
+system("mkdir", $dump) && unlock_and_die "mkdir failed to create $dump";
 
 use Proc::Queue size => 40, debug => 0, trace => 0;
 use POSIX ":sys_wait_h"; # imports WNOHANG
@@ -89,10 +89,10 @@ while (<FILE>) {
             print "ignoring foreign-cell $user $homedir\n";
             exit(0);
         }
-	print "$user\n";
+        print "$user\n";
         $ret = find($user, $homedir);
-	sleep rand 1;
-	exit($ret);
+        sleep rand 1;
+        exit($ret);
     }
     1 while waitpid(-1, WNOHANG)>0; # avoids memory leaks in Proc::Queue
 }
