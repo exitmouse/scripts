@@ -11,7 +11,7 @@ my $dump = "/mit/scripts/sec-tools/store/versions";
 my $dumpbackup = "/mit/scripts/sec-tools/store/versions-backup";
 
 # try to grab a lock on the version directory
-trylock($dump) || die "Can't acquire lock on $dump .  Another parallel-find may be running.  If you are SURE there is not, remove the lock file and retry.";
+trylock($dump) || die "Can't acquire lock; lockfile already exists at <$dump.lock>.  Another parallel-find may be running.  If you are SURE there is not, remove the lock file and retry.";
 
 sub unlock_and_die ($) {
     my $msg = shift;
