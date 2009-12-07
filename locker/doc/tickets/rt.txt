@@ -10,15 +10,21 @@ You should take a look in "Preferences" at the left. Make sure "Notify
 yourself of own updates" is on. You can also set the "Default Working Queue"
 to Scripts, and give yourself a signature referring to scripts@mit.edu.
 
-Another useful option here is to set a password, so you don't need certs to log
-in (and so you can use the zephyrbot).  The zephyrbot will take commands to -c
-scripts -i [ticket number] of the form /set status=resolved or /set
-owner=geofft.  You need to drop a file in /mit/geofft/web_scripts/rt/rt-passwords
-by your username with the format:
+Another useful option here is to set an RT passwordfor your account, so you
+don't need certs to log in (though it sometimes will keep asking you for
+your password on each page load if you don't have certs) and so you can use
+the zephyrbot).  The zephyrbot will take commands to
+-c scripts -i [ticket number] of the form /set status=resolved or
+/set owner=geofft.  You need to drop a file in
+/mit/geofft/web_scripts/rt/rt-passwords by your username with the format:
 
 "username" "yourawesomepassword"
 
 And then ask geofft (zwrite geofft) to restart the RT bot.
+
+Note that in the event that Geoff's account is compromised, it is possible
+for an attacker to use this password do manipulate tickets in *any*
+queue you have bits on, not just the Scripts one.
 
 The RT bot will post ticket notifications as -c scripts -i nnn.  If you are
 responding to a ticket, it is conventional to post "lock" to the appropriate
@@ -28,7 +34,12 @@ you are done handling the ticket.
 You can also place these commands on a line by themselves inside e-mail; they
 will be acted upon and removed before the e-mail gets sent back out.
 
-Don't use the To field, it doesn't work. If you want to send the ticket somewhere else, use CC.
+If you're adding a *comment* (such as when you're forwarding a cname request
+on to IS&T), don't use the 'To:' field, because it'll be clobbered by our
+RT scrips and the mail won't actually go to the destination you added.
+Instead, you should use the 'Cc:' field.  Similarly, if you're adding
+*correspondence*, the 'Cc:' field will be clobbered and you need to use
+the 'To:' field.
 
 Don't CC other RT queues, it doesn't work. If you really need to, use your
 e-mail client to forward it and remove the [help.mit.edu #nnn] tag.
