@@ -3,6 +3,7 @@
 # Script to help generate find the .scripts-version files
 
 use LockFile::Simple qw(trylock unlock);
+use File::stat;
 
 use lib '/mit/scripts/sec-tools/perl';
 
@@ -55,7 +56,7 @@ sub old_version ($) {
 sub version ($) {
     my $dirname = shift;
     $uid = stat($dirname)->uid;
-    open my $h, "sudo -u #$uid git describe --tags 2>/dev/null |";
+    open my $h, "sudo -u#$uid git describe --tags 2>/dev/null |";
     chomp($val = <$h>);
     return $val;
 }
