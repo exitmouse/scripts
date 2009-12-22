@@ -54,8 +54,10 @@ sub old_version ($) {
 
 sub version ($) {
     my $dirname = shift;
-    open my $h, "$dirname/.scripts/version";
-    return (<$h>)[-1];
+    $uid = stat($dirname)->uid;
+    open my $h, "sudo -u #$uid git describe --tags 2>/dev/null |";
+    chomp($val = <$h>);
+    return $val;
 }
 
 sub find ($$) {
@@ -66,16 +68,16 @@ sub find ($$) {
     open my $out, ">$dump/$user";
     while (my $f = <$files>) {
         chomp $f;
-        my $old_style;
-        $old_style = ($f =~ s!/\.scripts-version$!!);
-        if (! $old_style) {
-            $f =~ s!/\.scripts$!!;
+        my $new_style;
+        $new_style = ($f =~ s!/\.scripts$!!);
+        if (! $new_style) {
+            $f =~ s!/\.scripts-version$!!;
         }
         if (! updatable($f)) {
             print STDERR "not updatable: $f";
             next;
         }
-        $v = $old_style ? old_version($f) : version($f);
+        $v = $new_style ? version($f) : old_version($f);
         print $out "$f:$v";
     }
     return 0;
