@@ -56,8 +56,11 @@ sub old_version ($) {
 sub version ($) {
     my $dirname = shift;
     $uid = stat($dirname)->uid;
-    open my $h, "sudo -u#$uid git describe --tags 2>/dev/null |";
+    open my $h, "sudo -u#$uid git --git-dir=$dirname/.git describe --tags 2>/dev/null |";
     chomp($val = <$h>);
+    if (! $val) {
+        print "Failed to read value for $dirname\n"
+    }
     return $val;
 }
 
