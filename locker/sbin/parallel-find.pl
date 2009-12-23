@@ -57,7 +57,7 @@ sub old_version ($) {
 sub version ($) {
     my $dirname = shift;
     $uid = stat($dirname)->uid;
-    open my $h, "sudo -u#$uid git --git-dir=$dirname/.git describe --tags 2>/dev/null |";
+    open my $h, "sudo -u#$uid git --git-dir=$dirname/.git describe --tags --always 2>/dev/null |";
     chomp($val = <$h>);
     if (! $val) {
         print "Failed to read value for $dirname\n"
@@ -77,6 +77,10 @@ sub find ($$) {
         $new_style = ($f =~ s!/\.scripts$!!);
         if (! $new_style) {
             $f =~ s!/\.scripts-version$!!;
+            # Don't use .scripts-version of .scripts is around!
+            if (-d "$f/.scripts") {
+                next;
+            }
         }
         if (! updatable($f)) {
             print STDERR "not updatable: $f";
