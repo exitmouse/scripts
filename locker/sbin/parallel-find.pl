@@ -50,7 +50,8 @@ sub updatable ($) {
 sub old_version ($) {
     my $dirname = shift;
     open my $h, "$dirname/.scripts-version";
-    return (<$h>)[-1];
+    chomp (my $v = (<$h>)[-1]);
+    return $v;
 }
 
 sub version ($) {
@@ -61,7 +62,7 @@ sub version ($) {
     if (! $val) {
         print "Failed to read value for $dirname\n"
     }
-    return "$val\n";
+    return $val;
 }
 
 sub find ($$) {
@@ -82,7 +83,7 @@ sub find ($$) {
             next;
         }
         $v = $new_style ? version($f) : old_version($f);
-        print $out "$f:$v";
+        print $out "$f:$v\n";
     }
     return 0;
 }
