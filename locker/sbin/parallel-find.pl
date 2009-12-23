@@ -61,7 +61,7 @@ sub version ($) {
     if (! $val) {
         print "Failed to read value for $dirname\n"
     }
-    return $val;
+    return "$val\n";
 }
 
 sub find ($$) {
