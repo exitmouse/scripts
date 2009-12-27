@@ -1,6 +1,14 @@
 #!/usr/bin/env perl
 
 # ====================================================================
+# This script is deprecated.  The Subversion developers recommend
+# using mailer.py for post-commit and post-revprop change
+# notifications.  If you wish to improve or add features to a
+# post-commit notification script, please do that work on mailer.py.
+# See http://svn.collab.net/repos/svn/trunk/tools/hook-scripts/mailer .
+# ====================================================================
+
+# ====================================================================
 # commit-email.pl: send a notification email describing either a
 # commit or a revprop-change action on a Subversion repository.
 #
@@ -9,10 +17,10 @@
 #
 # This script requires Subversion 1.2.0 or later.
 #
-# $HeadURL: http://svn.collab.net/repos/svn/trunk/tools/hook-scripts/commit-email.pl.in $
-# $LastChangedDate: 2008-04-01 13:19:34 -0400 (Tue, 01 Apr 2008) $
-# $LastChangedBy: glasser $
-# $LastChangedRevision: 30158 $
+# $HeadURL: http://svn.collab.net/repos/svn/trunk/contrib/hook-scripts/commit-email.pl.in $
+# $LastChangedDate: 2009-05-12 13:25:35 -0400 (Tue, 12 May 2009) $
+# $LastChangedBy: blair $
+# $LastChangedRevision: 37715 $
 #
 # ====================================================================
 # Copyright (c) 2000-2006 CollabNet.  All rights reserved.
@@ -557,7 +565,7 @@ foreach my $project (@project_settings_list)
 
     my @head;
     my $formatted_date;
-    if (defined $stdout)
+    if ($stdout)
       {
         $formatted_date = strftime('%a %b %e %X %Y', localtime());
         push(@head, "From $mail_from $formatted_date\n");
@@ -752,7 +760,7 @@ sub safe_read_from_pipe
       croak "$0: safe_read_from_pipe passed no arguments.\n";
     }
 
-  my $openfork_available = $^O ne "MSWin32"; 
+  my $openfork_available = $^O ne "MSWin32";
   if ($openfork_available) # We can fork on this system.
     {
       my $pid = open(SAFE_READ, '-|');
@@ -768,18 +776,18 @@ sub safe_read_from_pipe
             or die "$0: cannot exec `@_': $!\n";
         }
     }
-  else  # Running on Windows.  No fork. 
+  else  # Running on Windows.  No fork.
     {
       my @commandline = ();
       my $arg;
-      
+
       while ($arg = shift)
         {
           $arg =~ s/\"/\\\"/g;
           if ($arg eq "" or $arg =~ /\s/) { $arg = "\"$arg\""; }
           push(@commandline, $arg);
         }
-        
+
       # Now do the pipe.
       open(SAFE_READ, "@commandline |")
         or die "$0: cannot pipe to command: $!\n";
