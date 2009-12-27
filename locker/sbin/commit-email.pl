@@ -52,6 +52,8 @@ my ($sendmail, $smtp_server);
 ######################################################################
 # Configuration section.
 
+$ENV{'LC_ALL'} = 'en_US.UTF-8';
+
 # Sendmail path, or SMTP server address.
 # You should define exactly one of these two configuration variables,
 # leaving the other commented out, to select which method of sending
