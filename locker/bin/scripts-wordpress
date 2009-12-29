@@ -3,4 +3,5 @@
 sname="WordPress"
 deploy="wordpress$scriptsstar"
 prompt_password=0
+wizard="wordpress"
 . /mit/scripts/deploy$scriptsdev/bin/onathena$scriptsstar

@@ -10,6 +10,7 @@ exec ssh \
 	-o ForwardX11=no \
 	-o GlobalKnownHostsFile=/afs/athena.mit.edu/contrib/scripts/ssh/known_hosts \
 	-o UserKnownHostsFile=/dev/null \
+	-t \
 	scripts.mit.edu -l "$lname" "$(printf "''%q " "$@")"
 
 # ssh gets quoting wrong, so we do it ourself with printf "%q ".
