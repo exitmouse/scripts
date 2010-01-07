@@ -113,6 +113,67 @@ for (@railswelcome) {
 }
 untie @railswelcome;
 
+tie my @railsfcgi, 'Tie::File', 'public/dispatch.fcgi';
+for (@railsfcgi) {
+    s/^[^#]*RailsFCGIHandler/## Commented out by scripts.mit.edu autoinstaller\n## RailsFCGIHandler/;
+}
+untie @railsfcgi;
+open RAILSFCGI, ">>public/dispatch.fcgi";
+print RAILSFCGI <<EOF;
+
+## Added by scripts.mit.edu autoinstaller to reload when app code changes
+Thread.abort_on_exception = true
+
+t1 = Thread.new do
+   RailsFCGIHandler.process!
+end
+
+t2 = Thread.new do
+   # List of directories to watch for changes before reload
+   Thread.current[:watched_dirs] = ['app', 'config', 'db', 'lib', 'public']
+   # Sample filter: /(\.rb|\.erb)\$/.  Default filter: watch all files
+   Thread.current[:watched_extensions] = //
+
+   def modified(file)
+     mtime = File.stat(file).mtime
+     Thread.current[:modifications][file] ||= mtime
+     Thread.current[:modifications][file] != mtime
+   end
+
+   # Don't symlink yourself into a loop.  Please.
+   def modified_dir(dir)
+     Dir.new(dir).each do |file|
+       absfile = File.join(dir, file)
+       if FileTest.directory? absfile
+         next if file == '.' or file == '..'
+         return true if modified_dir(absfile)
+       else
+         return true if Thread.current[:watched_extensions] =~ absfile &&
+           modified(absfile)
+       end
+     end
+     false
+   end
+
+   def reload
+     Thread.current[:modifications] = {}
+     RailsFCGIHandler.reload!
+   end
+
+   Thread.current[:modifications] = {}
+   # Wait until the modify time changes, then reload.
+   while true
+     reload if Thread.current[:watched_dirs].inject(false) {|z, dir| z ||
+       modified_dir(File.join(File.dirname(__FILE__), '..', dir))}
+     sleep 1
+   end
+end
+
+t1.join
+t2.join
+## End of scripts.mit.edu autoinstaller additions
+EOF
+
 print "Your application is located in:\n";
 print "  /mit/$USER/web_scripts/$addrend/\n";
 print "To run programs like rake or script/generate, run\n";
