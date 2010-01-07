@@ -89,6 +89,9 @@ RewriteBase /$addrend/
 EOF
 
 tie my @railsenv, 'Tie::File', 'config/environment.rb';
+unshift @railsenv, "# ENV['RAILS_ENV'] ||= 'production'";
+unshift @railsenv, "# Uncomment below to put Rails into production mode";
+unshift @railsenv, "";
 unshift @railsenv, "ENV['RAILS_RELATIVE_URL_ROOT'] = \"/$addrend\"";
 untie @railsenv;
 
