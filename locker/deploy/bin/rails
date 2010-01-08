@@ -129,18 +129,26 @@ t1 = Thread.new do
 end
 
 t2 = Thread.new do
-   # List of directories to watch for changes before reload
    Thread.current[:watched_dirs] = ['app', 'config', 'db', 'lib', 'public']
-   # Sample filter: /(\.rb|\.erb)\$/.  Default filter: watch all files
    Thread.current[:watched_extensions] = //
+   # Iterations since last reload
+   Thread.current[:iterations] = 0
 
    def modified(file)
-     mtime = File.stat(file).mtime
-     Thread.current[:modifications][file] ||= mtime
-     Thread.current[:modifications][file] != mtime
+     begin
+       mtime = File.stat(file).mtime
+     rescue
+       false
+     else
+       if Thread.current[:iterations] == 0
+         Thread.current[:modifications][file] = mtime
+       end
+       Thread.current[:modifications][file] != mtime
+     end
    end
 
-   # Don't symlink yourself into a loop.  Please.
+   # Don't symlink yourself into a loop.  Please.  Things will still work
+   # (Linux limits your symlink depth) but you will be sad
    def modified_dir(dir)
      Dir.new(dir).each do |file|
        absfile = File.join(dir, file)
@@ -149,7 +157,7 @@ t2 = Thread.new do
          return true if modified_dir(absfile)
        else
          return true if Thread.current[:watched_extensions] =~ absfile &&
-           modified(absfile)
+	   modified(absfile)
        end
      end
      false
@@ -157,14 +165,15 @@ t2 = Thread.new do
 
    def reload
      Thread.current[:modifications] = {}
+     Thread.current[:iterations] = 0
      RailsFCGIHandler.reload!
    end
 
    Thread.current[:modifications] = {}
    # Wait until the modify time changes, then reload.
    while true
-     reload if Thread.current[:watched_dirs].inject(false) {|z, dir| z ||
-       modified_dir(File.join(File.dirname(__FILE__), '..', dir))}
+     reload if Thread.current[:watched_dirs].inject(false) {|z, dir| z || modified_dir(File.join(File.dirname(__FILE__), '..', dir))}
+     Thread.current[:iterations] += 1
      sleep 1
    end
 end
