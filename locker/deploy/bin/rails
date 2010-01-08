@@ -129,7 +129,9 @@ t1 = Thread.new do
 end
 
 t2 = Thread.new do
+   # List of directories to watch for changes before reload
    Thread.current[:watched_dirs] = ['app', 'config', 'db', 'lib', 'public']
+   # Sample filter: /(\.rb|\.erb)\$/.  Default filter: watch all files
    Thread.current[:watched_extensions] = //
    # Iterations since last reload
    Thread.current[:iterations] = 0
