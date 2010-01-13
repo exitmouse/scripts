@@ -4,13 +4,13 @@ use FindBin qw($Bin);
 use lib $Bin;
 use onserver;
 
+setup();
+
 `cp skins/common/images/mediawiki.png skins/common/images/wiki.png`;
 `patch -s -p1 < /mit/scripts/deploy/mediawiki.patch`;
-setup();
 
 print "\nPlease decide upon a title for your wiki and enter it below.\n";
 print "Desired title: ";
-
 my $title=<STDIN>;
 chomp($title);
 
