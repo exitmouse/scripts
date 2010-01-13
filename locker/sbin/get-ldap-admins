@@ -1,0 +1,3 @@
+#!/bin/sh
+# This script can be run on or off of scripts
+ldapsearch -x -h scripts.mit.edu -b dc=scripts,dc=mit,dc=edu -LLL 'cn=Directory Administrators' uniqueMember

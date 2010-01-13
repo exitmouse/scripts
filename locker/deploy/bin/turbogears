@@ -1,0 +1,171 @@
+#!/usr/bin/perl
+use strict;
+use FindBin qw($Bin);
+use lib $Bin;
+use onserver;
+use Cwd;
+use File::Path;
+use URI::Escape;
+use DBI;
+use Config::IniFiles;
+use FileHandle;
+
+setup();
+
+print "\nEnter the name of your project (the title of this TurboGears instance).\n";
+my $name;
+while (1) {
+    print "Project name: ";
+    $name=<STDIN>;
+    chomp($name);
+    if ($name =~ /^[a-zA-Z][a-zA-Z0-9_ -]+$/) {
+	last;
+    }
+    print "Invalid project name; it should start with a letter and not contain\npunctuation other than dashes or underscores.\n";
+}	
+
+# quickstart turns spaces or underscores into dashes...
+$name =~ s/[ _-]+/-/g;
+
+my $defpack=lc($name);
+$defpack =~ s/[ -]/_/g;
+$defpack =~ s/[^a-z0-9_]//g;
+if (! ($defpack =~ /^[a-zA-Z]/)) {
+    $defpack = "p$defpack";
+}
+print "\nEnter the name for your project's python package.\n";
+my $pack;
+while (1) {
+    print "Package name [${defpack}]: ";
+    $pack=<STDIN>;
+    chomp($pack);
+    if (!($pack)) {
+	$pack=$defpack;
+	last;
+    } elsif ($pack =~ /^[a-zA-Z][a-zA-Z0-9_]+$/) {
+	last;
+    }
+    print "Invalid package name; it should start with a letter and contain only letters,\nnumbers, and underscores.\n";
+}
+
+print "\nWhat ORM (Object-Relational Mapper) do you want to use with this TurboGears\ninstance?  Select from the following list:\n";
+print "1. SQLAlchemy Elixir\n";
+print "2. SQLAlchemy\n";
+print "3. SQLObject\n";
+my $orm;
+while (1) {
+    print "ORM [1]: ";
+    my $ormnum=<STDIN>;
+    chomp($ormnum);
+    if ((!$ormnum) || $ormnum == 1) {
+	$orm = "elixir";
+	last;
+    } elsif ($ormnum == 2) {
+	$orm = "sqlalchemy";
+	last;
+    } elsif ($ormnum == 3) {
+	$orm = "sqlobject";
+	last;
+    }
+    print "Please choose 1, 2, or 3.\n";
+}
+
+print "\nWhat template do you want to use with this TurboGears instance?  Select from\nthe following list:\n";
+print "1. turbogears: normal template, recommended for most projects\n";
+print "2. tgbig:  a more complex directory structure for big projects\n";
+my $templ;
+while (1) {
+    print "Template [1]: ";
+    my $templnum=<STDIN>;
+    chomp($templnum);
+    if ((!$templnum) || $templnum == 1) {
+	$templ = "turbogears";
+	last;
+    } elsif ($templnum == 2) {
+	$templ = "tgbig";
+	last;
+    }
+    print "Please choose 1, 2, or 3.\n";
+}
+
+print "\nDo you want to use Identity (usernames/passwords) in this project?\n(These would be separate from Athena usernames/passwords.)\n";
+print "1. no identity: no logins, everyone sees the same pages\n";
+print "2. standard identity: users log in with site-specific usernames and passwords\n";
+#print "3. certificates: users are identified by their MIT certificates\n";
+my $ident;
+my $certpatch=0;
+while (1) {
+    print "Identity [1]: ";
+    my $identnum=<STDIN>;
+    chomp($identnum);
+    if ((!$identnum) || $identnum == 1) {
+	$ident = "no";
+	last;
+    } elsif ($identnum == 2) {
+	$ident = "yes";
+	last;
+    } elsif ($identnum == 3) {
+	$ident = "yes";
+	$certpatch = 1;
+	last;
+    }
+}
+
+open (FLUPCONF, ">flupconfig.py");
+print FLUPCONF <<EOF;
+code_dir = "/mit/$USER/Scripts/turbogears/$name/"
+project_name = "$name"
+package_name = "$pack"
+EOF
+close (FLUPCONF);
+
+system("ln","-s","/mit/$USER/Scripts/turbogears/$name/$pack","./$pack");
+system("ln","-s","/mit/$USER/Scripts/turbogears/$name/$pack/static",
+    "./static");
+
+chdir("/mit/$USER/Scripts/turbogears/");
+print "\nRunning tg-admin quickstart...\n";
+open(QS, "|/usr/bin/tg-admin quickstart $name --package=$pack --$orm --templates=$templ")
+    or die("tg-admin quickstart failed open!");
+QS->autoflush(1);
+print QS "$ident\n" or die("tg-admin quickstart failed specify ident!");
+close(QS) or die("tg-admin quickstart failed close!");
+
+# Put in the sqldb
+system(qw(sed -ri),'s/^sql(alchemy|object)\.dburi(.*)$/#sql\1.dburi\2\nsqlalchemy.dburi="mysql:\/\/' . uri_escape($sqluser) . ":" . uri_escape($sqlpass) . "\@$sqlhost\\/$sqldb\"/","$name/dev.cfg", "$name/sample-prod.cfg") == 0 or die "sed db failed!";
+system(qw(sed -ri),'s/^#? *autoreload\.on.*$/autoreload.on = False # breaks the scripts flup setup/',"$name/dev.cfg") == 0 or die "sed autoreload failed!";
+my $addrendescsl = $addrend;
+$addrendescsl =~ s|/|\\/|g;
+# Obviated by a TurboGears upgrade
+#system(qw(sed -ri),'s/^(\[global\] *)$/\1\nserver.webpath = "\/'."$addrendescsl".'"/',"$name/dev.cfg") == 0 or die "sed webpath failed!";
+if ($orm eq "elixir" or $orm eq "sqlalchemy") {
+    system(qw(sed -ri),'s/^(\[global\] *)$/\1\nsqlalchemy.pool_recycle = 30 # Need a short timeout for sql.mit.edu/',"$name/$pack/config/app.cfg") == 0 or die "sed pool_recycle failed!";
+}
+
+# Make logdir
+system('mkdir','-p',"$name/log");
+
+# Cert patch
+if ($certpatch) {
+    # comment out the password = line in model
+    system(qw(sed -ri),
+	   's/^(.*password.*)$/#\1 -- we use certs, not passwords/',
+	   "$name/$pack/model.py") == 0 or die "sed model for certs failed!";
+    
+    # Stick cert.py in
+    system('cp',"/mit/scripts/deploy$scriptsdev/turbogears-certs/certs.py",
+	   "$name/$pack/") == 0 or die "cp certs.py failed!";
+    
+    # Add the certness to controllers.py
+    system(qw(sed -ri),
+	   's/^(from cherrypy.*)$/\1\nfrom '."$pack".'.certs import with_mit_certs/',
+	   "$name/$pack/controllers.py") == 0 or die "sed controllers import for certs failed!";
+    system(qw(sed -ri),
+	   's/^(\s+)(def login.*)$/\1@with_mit_certs\n\1\2',
+	   "$name/$pack/model.py") == 0 or die "sed model for certs failed!";
+    #-! replace login body
+    #-! replace logout body
+    #-! replace login.kid
+}
+
+exit 0;

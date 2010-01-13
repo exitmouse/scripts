@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ ! "$1" ]; then
+    echo "Usage: $0 <vhost>"
+    exit 2
+fi
+
+exec ldapvi --bind sasl -Y GSSAPI -h scripts4.mit.edu -b dc=scripts,dc=mit,dc=edu \
+       "(|(&(objectClass=apacheConfig)(|(apacheServerName=$1)(apacheServerAlias=$1)))(&(objectClass=scriptsVhost)(|(scriptsVhostName=$1)(scriptsVhostAlias=$1))))"
