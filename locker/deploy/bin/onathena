@@ -14,14 +14,15 @@ die() {
   echo "Please contact scripts@mit.edu and provide a copy of the output of this installer."
   exit 1
 }
-  
+
+attach scripts
 
 sshrun() {
-  athrun scripts scripts-ssh "$lname" "/mit/scripts/$@" 2>/dev/null
+  /afs/athena.mit.edu/contrib/scripts/bin$scriptsdev/scripts-ssh "$lname" "/mit/scripts/$@" 2>/dev/null
 }
 
 vsshrun() {
-  athrun scripts scripts-ssh "$lname" "/mit/scripts/$@"
+  /afs/athena.mit.edu/contrib/scripts/bin$scriptsdev/scripts-ssh "$lname" "/mit/scripts/$@"
 }
 
 checksqlpass() {
@@ -157,31 +158,6 @@ if [ "$requires_sql" -eq 1 ]; then
   fi
 fi
 
-if [ "$prompt_username" = "" ]; then
-  admin_username="admin"
-  prompt_username=0
-fi
-if [ "$prompt_password" = "" ]; then
-  prompt_password=1
-fi
-
-if [ "$prompt_username" -eq 1 ]; then
-    echo
-    echo "You will be able to log in to $sname using a username of your choice."
-    echo "Please decide upon a username and enter it below."
-    echo "Your username must contain only alphanumeric characters (a-z, 0-9)."
-    printf "Desired username: "
-    read admin_username
-    admin_username=`perl -0e 'print $ARGV[0] =~ /^([[:alnum:]]+)$/' -- "$admin_username"`
-    if [ "$admin_username" = "" ]; then
-        echo
-        echo ERROR:
-        echo "Your username must contain only alphanumeric characters (a-z, 0-9)."
-        echo "You will need to run the installer again and choose a different username."
-        exit 1
-    fi
-fi
-
 origdir=`pwd`
 mkdir -p "$lroot/web_scripts_tmp"
 cd "$lroot/web_scripts_tmp"
@@ -196,15 +172,6 @@ fs sa . system:anyuser none
 fs sa . system:authuser none
 fs sa . daemon.scripts write
 fs sa . system:scripts-security-upd write
-
-if [ "$prompt_password" -eq 1 ]; then
-    stty -echo
-    sshrun "deploy$scriptsdev/bin/prompt-password" "$sname" "$deploy" "$addrend" "$admin_username"
-    stty echo
-fi
-
-echo
-echo "Unpacking $sname... (this step might take several minutes)"
 
 # This version is deprecated, use create_scripts_dir instead
 
@@ -234,24 +201,48 @@ if [ "$create_scripts_dir" -eq 1 ]; then
   fs sa "$lroot/Scripts/$deploy" system:scripts-security-upd write
 fi
 
-# xavid: use p to keep the same permissions as in the file
-athrun scripts gtar zxpf "/mit/scripts/deploy$scriptsdev/$deploy.tar.gz"
-files=`athrun scripts gfind . -mindepth 1 -maxdepth 1 | grep -v .admin`
-numfiles=`echo "$files" | wc -l`
-if [ ! -z "$files" ]; then
-    if [ "$numfiles" -eq 1 ]; then
-        athrun scripts gfind . -mindepth 2 -maxdepth 2 | xargs -i mv \{} .
-        rmdir "$files"
+if [ "$wizard" != "" ]; then
+  vsshrun "wizard/bin/wizard" "install" "$@" "$wizard" "$lroot/web_scripts/$addrend"
+  exit 0
+fi
+
+if [ "$prompt_username" = "" ]; then
+  admin_username="admin"
+  prompt_username=0
+fi
+if [ "$prompt_password" = "" ]; then
+  prompt_password=1
+fi
+
+if [ "$prompt_username" -eq 1 ]; then
+    echo
+    echo "You will be able to log in to $sname using a username of your choice."
+    echo "Please decide upon a username and enter it below."
+    echo "Your username must contain only alphanumeric characters (a-z, 0-9)."
+    printf "Desired username: "
+    read admin_username
+    admin_username=`perl -0e 'print $ARGV[0] =~ /^([[:alnum:]]+)$/' -- "$admin_username"`
+    if [ "$admin_username" = "" ]; then
+        echo
+        echo ERROR:
+        echo "Your username must contain only alphanumeric characters (a-z, 0-9)."
+        echo "You will need to run the installer again and choose a different username."
+        exit 1
     fi
 fi
-if [ -f "/mit/scripts/deploy$scriptsdev/php.ini/$deploy" ]; then
-	nodot=`echo "$lname" | sed "/\./s///"`;
-	sed -e "/SCRIPTS_USER/ s//$lname/" -e "/SCRIPTS_NODOT/ s//$nodot/" "/mit/scripts/deploy$scriptsdev/php.ini/$deploy" > php.ini
-	athrun scripts gfind . -mindepth 1 -type d -exec sh -c 'ln -sf "`echo "$1" | sed '\''s,[^/],,g; s,/,../,g'\''`php.ini" "$1/"' -- {} \;
+
+if [ "$prompt_password" -eq 1 ]; then
+    stty -echo
+    sshrun "deploy$scriptsdev/bin/prompt-password" "$sname" "$deploy" "$addrend" "$admin_username"
+    stty echo
 fi
+
 cd "$origdir"
 
-vsshrun "deploy$scriptsdev/bin/$deploy" "$sname" "$deploy" "$addrend" "$admin_username" "$requires_sql" "$scriptsdev" "$USER" || die "Unknown failure during configuration"
+echo
+echo "Unpacking $sname... (this step might take several minutes)"
+
+vsshrun "deploy$scriptsdev/bin/$deploy" "$lname" "$sname" "$deploy" "$addrend" "$admin_username" "$requires_sql" "$scriptsdev" "$USER" || die "Unknown failure during configuration"
 rm -f "$lroot/web_scripts/$addrend/.scripts-tmp"
 checkfailed
 
