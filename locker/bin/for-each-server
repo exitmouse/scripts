@@ -1,0 +1,14 @@
+#!/bin/sh
+
+case `machtype` in
+    linux|darwin)
+        TAIL_ARG="-n"
+	;;
+    *)
+        TAIL_ARG=""
+	;;
+esac
+
+for server in `finger @scripts.mit.edu | tail ${TAIL_ARG} +5 | sed -n "s/  -> \([^:]*\):.*/\1/p" | sort -u`; do
+    ssh "$server" "$@"
+done
