@@ -1,6 +1,17 @@
-#!/bin/sh
+#!/bin/bash
+#
+# This is a script that can be called from a Subversion post-commit hook
+# to zephyr a summary of the commit or the full commit.
+#
+# Use by putting something like the following in hooks/post-commit:
+# REPOS="$1"
+# REV="$2"
+# /mit/snippets/svn-hooks/commit-zephyr "$REPOS" "$REV" -c scripts
+# /mit/snippets/svn-hooks/commit-zephyr "$REPOS" "$REV" --full -c scripts-auto -i commits
 
-CLASS=scripts
+export LC_ALL=en_US.UTF-8
+
+CLASS=test
 INSTANCE=@
 FULL=0
 
@@ -38,4 +49,4 @@ svnlook info "$REPOS" -r "$REV" | (
     else
 	echo svnlook diff "$REPOS" -r "$REV"
     fi
-) | zwrite -d -c "$CLASS" -i "$INSTANCE" -s "r$REV - $dirs"
+) | zwrite -d -c "$CLASS" -i "$INSTANCE" -O "auto" -s "SVN: r$REV"
