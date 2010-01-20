@@ -62,12 +62,15 @@ if [ "$ans" != "0" ]; then
   echo "This is probably because your locker is not publicly listable."
   echo "You can remedy this signup problem and make your locker publicly"
   echo "listable by running \"fs sa /mit/$lname system:anyuser l\" (with a"
-  echo "lowercase L at the end).  Note that this will make it possible for"
-  echo "anyone to see the names of your files and the list of people who"
-  echo "have access to them, though it will not cause the contents of your"
-  echo "files to be publicly readable.  If you are unwilling to have your"
-  echo "locker listable by the public, please contact scripts@mit.edu"
-  echo "for information about other ways to work around the problem."
+  echo "lowercase L at the end)."
+  echo ""
+  echo "NOTE: This will make it possible for the public (including anyone"
+  echo "viewing http://web.mit.edu/$lname) to see the names of your files"
+  echo "and the list of people who have access to them, though it will not"
+  echo "cause the contents of your files to be publicly readable.  If you"
+  echo "are unwilling to have your locker listable by the public, please"
+  echo "contact scripts@mit.edu for information about other ways to work"
+  echo "around the problem."
   exit 1
 fi
 
