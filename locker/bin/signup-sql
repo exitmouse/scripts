@@ -16,7 +16,7 @@ vsshrun() {
 }
 
 checksqlpass() {
-    errors=`sshrun 'sql/bin$scriptsdev/test-password'`
+    errors=`sshrun "sql/bin$scriptsdev/test-password"`
     if [ "$errors" != "" ]; then
         if [ "$1" -eq 1 ]; then
           rm -f $lroot/.sql/my.cnf
