@@ -59,9 +59,15 @@ if [ "$ans" != "0" ]; then
   echo
   echo "ERROR:"
   echo "The scripts servers cannot verify the permissions of the locker <$lname>."
-  echo "Try running \"fs sa /mit/$lname daemon.scripts l\" (with a lowercase"
-  echo "L at the end) and then try again. Contact scripts@mit.edu if you are"
-  echo "unable to solve the problem."
+  echo "This is probably because your locker is not publicly listable."
+  echo "You can remedy this signup problem and make your locker publicly"
+  echo "listable by running \"fs sa /mit/$lname system:anyuser l\" (with a"
+  echo "lowercase L at the end).  Note that this will make it possible for"
+  echo "anyone to see the names of your files and the list of people who"
+  echo "have access to them, though it will not cause the contents of your"
+  echo "files to be publicly readable.  If you are unwilling to have your"
+  echo "locker listable by the public, please contact scripts@mit.edu"
+  echo "for information about other ways to work around the problem."
   exit 1
 fi
 
