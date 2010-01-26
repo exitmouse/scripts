@@ -83,7 +83,7 @@ if [ ! -f "$lroot/.my.cnf" ]; then
   fs sa $lroot/.sql system:authuser none
   fs sa $lroot/.sql daemon.scripts write
   fs sa $lroot/.sql daemon.sql write
-  ln -nfs $lroot/.sql/my.cnf $lroot/.my.cnf
+  ln -nfs .sql/my.cnf $lroot/.my.cnf
 fi
 
 if [ "$requires_sql" -eq 1 ]; then
