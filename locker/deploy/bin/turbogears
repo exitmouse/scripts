@@ -132,7 +132,25 @@ print QS "$ident\n" or die("tg-admin quickstart failed specify ident!");
 close(QS) or die("tg-admin quickstart failed close!");
 
 # Put in the sqldb
-system(qw(sed -ri),'s/^sql(alchemy|object)\.dburi(.*)$/#sql\1.dburi\2\nsqlalchemy.dburi="mysql:\/\/' . uri_escape($sqluser) . ":" . uri_escape($sqlpass) . "\@$sqlhost\\/$sqldb\"/","$name/dev.cfg", "$name/sample-prod.cfg") == 0 or die "sed db failed!";
+if ($orm eq "sqlobject") {
+    my $uriuser = uri_escape($sqluser);
+    my $uripass = uri_escape($sqlpass);
+    foreach my $fil (("$name/dev.cfg", "$name/sample-prod.cfg"))
+    {
+	open my $in, '<', $fil or die "Can't read old file: $!";
+	open my $out, '>', "$fil.new" or die "Can't write new file: $!";
+
+	while (<$in>) {
+	    s/^sqlobject\.dburi(.*)$/#sqlobject.dburi\2\nsqlobject.dburi="mysql:\/\/$uriuser:$uripass\@$sqlhost\/$sqldb"/;
+	    print $out $_;
+	}
+	close $out;
+	rename "$fil.new", $fil
+	    or die "Cannot rename: $!";
+    }
+} else {
+    system(qw(sed -ri),"s&^sql(alchemy|object)\.dburi(.*)\$&#sql\\1.dburi\\2\\nsql\\1.dburi=\"mysql://$sqlhost/$sqldb?read_default_file=~/.my.cnf\"&","$name/dev.cfg", "$name/sample-prod.cfg") == 0 or die "sed db failed!";
+}
 system(qw(sed -ri),'s/^#? *autoreload\.on.*$/autoreload.on = False # breaks the scripts flup setup/',"$name/dev.cfg") == 0 or die "sed autoreload failed!";
 my $addrendescsl = $addrend;
 $addrendescsl =~ s|/|\\/|g;
