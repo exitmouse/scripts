@@ -173,7 +173,7 @@ t2 = Thread.new do
    def reload
      Thread.current[:modifications] = {}
      Thread.current[:iterations] = 0
-     RailsFCGIHandler.reload!
+     raise RuntimeError # This is a kludge, but at the same time it works.
    end
 
    Thread.current[:modifications] = {}
