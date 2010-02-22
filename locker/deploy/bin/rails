@@ -173,7 +173,10 @@ t2 = Thread.new do
    def reload
      Thread.current[:modifications] = {}
      Thread.current[:iterations] = 0
-     raise RuntimeError # This is a kludge, but at the same time it works.
+     # This is a kludge, but at the same time it works.
+     # Will kill the current FCGI process so that it is reloaded
+     # at next request.
+     raise RuntimeError
    end
 
    Thread.current[:modifications] = {}
