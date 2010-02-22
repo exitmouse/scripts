@@ -132,6 +132,10 @@ t2 = Thread.new do
    # List of directories to watch for changes before reload.
    # You may want to also watch public or vendor, depending on your needs.
    Thread.current[:watched_dirs] = ['app', 'config', 'db', 'lib']
+
+   # List of specific files to watch for changes.
+   Thread.current[:watched_files] = ['public/dispatch.fcgi',
+				     'public/.htaccess']
    # Sample filter: /(\.rb|\.erb)\$/.  Default filter: watch all files
    Thread.current[:watched_extensions] = //
    # Iterations since last reload
@@ -175,7 +179,9 @@ t2 = Thread.new do
    Thread.current[:modifications] = {}
    # Wait until the modify time changes, then reload.
    while true
-     reload if Thread.current[:watched_dirs].inject(false) {|z, dir| z || modified_dir(File.join(File.dirname(__FILE__), '..', dir))}
+     dir_modified = Thread.current[:watched_dirs].inject(false) {|z, dir| z || modified_dir(File.join(File.dirname(__FILE__), '..', dir))}
+     file_modified = Thread.current[:watched_files].inject(false) {|z, file| z || modified(File.join(File.dirname(__FILE__), '..', file))}
+     reload if dir_modified || file_modified
      Thread.current[:iterations] += 1
      sleep 1
    end
