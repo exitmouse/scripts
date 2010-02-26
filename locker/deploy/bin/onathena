@@ -2,7 +2,7 @@
 
 : ${aicontact:=scripts@mit.edu}
 : ${aimaintainer:=scripts.mit.edu}
-: ${ailocker=scripts}
+: ${ailocker:=scripts}
 
 
 checkfailed() {
