@@ -1,12 +1,7 @@
 #!/bin/sh
 
-if [ "$aicontact" = "" ]; then
-    aicontact="scripts@mit.edu"
-fi
-
-if [ "$aimaintainer" = "" ]; then
-    aimaintainer="scripts.mit.edu"
-fi
+: ${aicontact:=scripts@mit.edu}
+: ${aimaintainer:=scripts.mit.edu}
 
 
 checkfailed() {
