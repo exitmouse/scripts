@@ -1,5 +1,10 @@
 #!/bin/sh
 
+: ${aicontact:=scripts@mit.edu}
+: ${aimaintainer:=scripts.mit.edu}
+: ${ailocker:=scripts}
+
+
 checkfailed() {
   if [ -f "$lroot/web_scripts/$addrend/.failed" ]; then
     rm -f "$lroot/web_scripts/$addrend/.failed"
@@ -11,22 +16,23 @@ die() {
   echo "== INSTALLATION FAILED =="
   echo "Sorry, the installation failed:"
   echo "$@"
-  echo "Please contact scripts@mit.edu and provide a copy of the output of this installer."
+  echo "Please contact $aicontact and provide a copy of the output of this installer."
   exit 1
 }
 
 attach scripts
+[ "$ailocker" != "scripts" ] && attach "$ailocker"
 
 sshrun() {
-  /afs/athena.mit.edu/contrib/scripts/bin$scriptsdev/scripts-ssh "$lname" "/mit/scripts/$@" 2>/dev/null
+  /afs/athena.mit.edu/contrib/scripts/bin$scriptsdev/scripts-ssh "$lname" "$@" 2>/dev/null
 }
 
 vsshrun() {
-  /afs/athena.mit.edu/contrib/scripts/bin$scriptsdev/scripts-ssh "$lname" "/mit/scripts/$@"
+  /afs/athena.mit.edu/contrib/scripts/bin$scriptsdev/scripts-ssh "$lname" "$@"
 }
 
 checksqlpass() {
-    errors=`sshrun "sql/bin$scriptsdev/test-password"`
+    errors=`sshrun "/mit/scripts/sql/bin$scriptsdev/test-password"`
     if [ "$errors" != "" ]; then
         if [ "$1" -eq 1 ]; then
           rm -f "$lroot/.sql/my.cnf"
@@ -40,21 +46,21 @@ checksqlpass() {
 
 override=1
 if [ "$override" = "" ]; then
-echo "The scripts.mit.edu automatic installers are currently unavailable."
+echo "The $aimaintainer automatic installers are currently unavailable."
 echo "We hope to make them available again soon."
 echo "If you would like us to notify you as soon as they are available again,"
-echo "let us know by sending us an e-mail at scripts@mit.edu"
+echo "let us know by sending us an e-mail at $aicontact"
 exit 
 fi
 
 echo 
-echo "== Welcome to the scripts.mit.edu installer for $sname =="
+echo "== Welcome to the $aimaintainer installer for $sname =="
 echo
 
 echo "For documentation, including a link to the Athena rules of use,"
 echo "see <http://scripts.mit.edu/start>."
 echo
-echo "Please report problems with this installer to scripts@mit.edu."
+echo "Please report problems with this installer to $aicontact."
 echo
 echo "Are you performing this install for:"
 echo "1. Your personal Athena account"
@@ -117,7 +123,7 @@ if [ -d "$lroot/web_scripts/$addrend" ]; then
     echo "ERROR:"
     echo "You already have a directory corresponding to that web address."
     echo "Please remove that directory, choose a different address, or"
-    echo "contact scripts@mit.edu for assistance."
+    echo "contact $aicontact for assistance."
     exit 1
 fi
 
@@ -136,7 +142,7 @@ fs sa "$lroot/.sql" system:anyuser none
 fs sa "$lroot/.sql" system:authuser none
 
 if [ "$requires_sql" -eq 1 ]; then
-  sqlinfo=`sshrun "sql/bin$scriptsdev/get-password"`
+  sqlinfo=`sshrun "/mit/scripts/sql/bin$scriptsdev/get-password"`
   if [ "$sqlinfo" = "" ]; then
       echo 
       echo "You already have a MySQL account but you do not have a .my.cnf file."
@@ -202,7 +208,7 @@ if [ "$create_scripts_dir" -eq 1 ]; then
 fi
 
 if [ "$wizard" != "" ]; then
-  vsshrun "wizard/bin/wizard" "install" "$@" "$wizard" "$lroot/web_scripts/$addrend"
+  vsshrun "/mit/$ailocker/wizard/bin/wizard" "install" "$@" "$wizard" "$lroot/web_scripts/$addrend"
   exit 0
 fi
 
@@ -233,14 +239,14 @@ fi
 
 if [ "$prompt_password" -eq 1 ]; then
     stty -echo
-    sshrun "deploy$scriptsdev/bin/prompt-password" "$sname" "$deploy" "$addrend" "$admin_username"
+    sshrun "/mit/$ailocker/deploy$scriptsdev/bin/prompt-password" "$sname" "$deploy" "$addrend" "$admin_username"
     stty echo
 fi
 
 echo
 echo "Unpacking $sname... (this step might take several minutes)"
 # xavid: use p to keep the same permissions as in the file
-athrun scripts gtar zxpf "/mit/scripts/deploy$scriptsdev/$deploy.tar.gz"
+athrun scripts gtar zxpf "/mit/$ailocker/deploy$scriptsdev/$deploy.tar.gz"
 files=`athrun scripts gfind . -mindepth 1 -maxdepth 1 | grep -v .admin`
 numfiles=`echo "$files" | wc -l`
 if [ ! -z "$files" ]; then
@@ -249,14 +255,14 @@ if [ ! -z "$files" ]; then
         rmdir "$files"
     fi
 fi
-if [ -f "/mit/scripts/deploy$scriptsdev/php.ini/$deploy" ]; then
+if [ -f "/mit/$ailocker/deploy$scriptsdev/php.ini/$deploy" ]; then
         nodot=`echo "$lname" | sed "/\./s///"`;
-        sed -e "/SCRIPTS_USER/ s//$lname/" -e "/SCRIPTS_NODOT/ s//$nodot/" "/mit/scripts/deploy$scriptsdev/php.ini/$deploy" > php.ini
+        sed -e "/SCRIPTS_USER/ s//$lname/" -e "/SCRIPTS_NODOT/ s//$nodot/" "/mit/$ailocker/deploy$scriptsdev/php.ini/$deploy" > php.ini
         athrun scripts gfind . -mindepth 1 -type d -exec sh -c 'ln -sf "`echo "$1" | sed '\''s,[^/],,g; s,/,../,g'\''`php.ini" "$1/"' -- {} \;
 fi
 cd "$origdir"
 
-vsshrun "deploy$scriptsdev/bin/$deploy" "$sname" "$deploy" "$addrend" "$admin_username" "$requires_sql" "$scriptsdev" "$USER" || die "Unknown failure during configuration"
+vsshrun "/mit/$ailocker/deploy$scriptsdev/bin/$deploy" "$sname" "$deploy" "$addrend" "$admin_username" "$requires_sql" "$scriptsdev" "$USER" || die "Unknown failure during configuration"
 rm -f "$lroot/web_scripts/$addrend/.scripts-tmp"
 checkfailed
 
@@ -266,5 +272,5 @@ echo "You should now be able to access your new copy of $sname at"
 echo "http://$lname.scripts.mit.edu/$addrend/"
 echo "(You can replace the http with https if you want to use encryption)"
 echo "If you have trouble accessing it, feel free to contact"
-echo "the scripts.mit.edu team by e-mailing scripts@mit.edu"
+echo "the $aimaintainer team by e-mailing $aicontact"
 exit 0
