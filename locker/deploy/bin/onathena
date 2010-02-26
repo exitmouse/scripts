@@ -1,5 +1,14 @@
 #!/bin/sh
 
+if [ "$aicontact" = "" ]; then
+    aicontact="scripts@mit.edu"
+fi
+
+if [ "$aimaintainer" = "" ]; then
+    aimaintainer="scripts.mit.edu"
+fi
+
+
 checkfailed() {
   if [ -f "$lroot/web_scripts/$addrend/.failed" ]; then
     rm -f "$lroot/web_scripts/$addrend/.failed"
@@ -11,7 +20,7 @@ die() {
   echo "== INSTALLATION FAILED =="
   echo "Sorry, the installation failed:"
   echo "$@"
-  echo "Please contact scripts@mit.edu and provide a copy of the output of this installer."
+  echo "Please contact $aicontact and provide a copy of the output of this installer."
   exit 1
 }
 
@@ -40,21 +49,21 @@ checksqlpass() {
 
 override=1
 if [ "$override" = "" ]; then
-echo "The scripts.mit.edu automatic installers are currently unavailable."
+echo "The $aimaintainer automatic installers are currently unavailable."
 echo "We hope to make them available again soon."
 echo "If you would like us to notify you as soon as they are available again,"
-echo "let us know by sending us an e-mail at scripts@mit.edu"
+echo "let us know by sending us an e-mail at $aicontact"
 exit 
 fi
 
 echo 
-echo "== Welcome to the scripts.mit.edu installer for $sname =="
+echo "== Welcome to the $aimaintainer installer for $sname =="
 echo
 
 echo "For documentation, including a link to the Athena rules of use,"
 echo "see <http://scripts.mit.edu/start>."
 echo
-echo "Please report problems with this installer to scripts@mit.edu."
+echo "Please report problems with this installer to $aicontact."
 echo
 echo "Are you performing this install for:"
 echo "1. Your personal Athena account"
@@ -117,7 +126,7 @@ if [ -d "$lroot/web_scripts/$addrend" ]; then
     echo "ERROR:"
     echo "You already have a directory corresponding to that web address."
     echo "Please remove that directory, choose a different address, or"
-    echo "contact scripts@mit.edu for assistance."
+    echo "contact $aicontact for assistance."
     exit 1
 fi
 
@@ -266,5 +275,5 @@ echo "You should now be able to access your new copy of $sname at"
 echo "http://$lname.scripts.mit.edu/$addrend/"
 echo "(You can replace the http with https if you want to use encryption)"
 echo "If you have trouble accessing it, feel free to contact"
-echo "the scripts.mit.edu team by e-mailing scripts@mit.edu"
+echo "the $aimaintainer team by e-mailing $aicontact"
 exit 0
