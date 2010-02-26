@@ -21,7 +21,7 @@ die() {
 }
 
 attach scripts
-attach "$ailocker"
+[ "$ailocker" != "scripts" ] && attach "$ailocker"
 
 sshrun() {
   /afs/athena.mit.edu/contrib/scripts/bin$scriptsdev/scripts-ssh "$lname" "$@" 2>/dev/null
