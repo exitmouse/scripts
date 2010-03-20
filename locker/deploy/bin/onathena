@@ -262,7 +262,7 @@ if [ -f "/mit/$ailocker/deploy$scriptsdev/php.ini/$deploy" ]; then
 fi
 cd "$origdir"
 
-vsshrun "/mit/$ailocker/deploy$scriptsdev/bin/$deploy" "$sname" "$deploy" "$addrend" "$admin_username" "$requires_sql" "$scriptsdev" "$USER" || die "Unknown failure during configuration"
+vsshrun "/mit/$ailocker/deploy$scriptsdev/bin/$deploy" "$sname" "$deploy" "$addrend" "$admin_username" "$requires_sql" "$scriptsdev" "${ATHENA_USER:-$USER}" || die "Unknown failure during configuration"
 rm -f "$lroot/web_scripts/$addrend/.scripts-tmp"
 checkfailed
 
