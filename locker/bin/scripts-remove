@@ -53,11 +53,11 @@ attach "$lname" 2>/dev/null
 
 echo 
 echo "When you installed the software, you chose a URL"
-echo "that starts with http://scripts.mit.edu/~$lname/."
+echo "that starts with http://$lname.scripts.mit.edu/."
 echo "Please enter the full URL where this software was"
 echo "installed.  (This should correspond to a directory"
 echo "in /mit/$lname/web_scripts/.)"
-printf "%s" "URL: http://scripts.mit.edu/~$lname/"
+printf "%s" "URL: http://$lname.scripts.mit.edu/"
 read addrend
 
 addrend=`perl -0e 'print $ARGV[0] =~ /^([\w\/-]*[\w-])\/*$/' -- "$addrend"`
