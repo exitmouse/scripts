@@ -64,7 +64,7 @@ addrend=`perl -0e 'print $ARGV[0] =~ /^([\w\/-]*[\w-])\/*$/' -- "$addrend"`
 if [ "$addrend" = "" ]; then
     echo
     echo "ERROR:"
-    echo "You must enter one or more characters after ~$lname/"
+    echo "You must enter one or more characters after mit.edu/"
     echo "The completed address must only contain a-z, 0-9, and /."
     exit 1
 fi
@@ -156,5 +156,5 @@ if [ "$sqldb" = "${addrend}1" ]; then
     fi
 fi
 echo
-echo "The installation in http://scripts.mit.edu/~$lname/$addrend"
+echo "The installation in http://$lname.scripts.mit.edu/$addrend"
 echo "has been successfully uninstalled."
