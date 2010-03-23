@@ -145,7 +145,6 @@ if [ "$sqldb" = "${addrend}1" ]; then
             echo "A one-day-old backup of your SQL database is"
             echo "available in /mit/sql/backup/$lname".
         fi
-        exit
     else
         echo "ERROR:"
         echo "The database $lname+$addrend"
