@@ -53,10 +53,13 @@ attach "$lname" 2>/dev/null
 
 echo 
 echo "When you installed the software, you chose a URL"
-echo "that starts with http://$lname.scripts.mit.edu/."
-echo "Please enter the full URL where this software was"
-echo "installed.  (This should correspond to a directory"
-echo "in /mit/$lname/web_scripts/.)"
+echo "that starts with http://$lname.scripts.mit.edu/"
+echo "(for software installed after March 2009) or"
+echo "http://scripts.mit.edu/~$lname/ (for software"
+echo "installed before then."
+echo "Please enter the new-style full URL where this"
+echo "software was installed.  (This should correspond"
+echo "to a directory in /mit/$lname/web_scripts/.)"
 printf "%s" "URL: http://$lname.scripts.mit.edu/"
 read addrend
 
