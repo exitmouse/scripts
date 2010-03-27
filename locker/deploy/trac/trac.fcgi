@@ -2,6 +2,7 @@
 
 import os, os.path, sys
 from trac.web import fcgi_frontend
+import urlparse
 
 env_path = os.getcwd()+'/tracdata'
 os.environ['TRAC_ENV'] = env_path
@@ -46,6 +47,23 @@ def my_dispatch_request(environ, start_response):
     if ('REDIRECT_URL' in environ and 'PATH_INFO' in environ
         and environ['REDIRECT_URL'].endswith(environ['PATH_INFO'])):
         environ['SCRIPT_NAME'] = environ['REDIRECT_URL'][:-len(environ['PATH_INFO'])]
+
+    # If the referrer has our hostname and path, rewrite it to have
+    # the right protocol and port, too.  This lets the login link go
+    # to the right page.
+    if 'HTTP_REFERER' in environ:
+        referrer = urlparse.urlsplit(environ['HTTP_REFERER'])
+        base = urlparse.urlsplit(
+            ('https://' if environ.get('HTTPS') == 'on' else 'http://') +
+            environ['HTTP_HOST'] +
+            environ['SCRIPT_NAME'])
+        if referrer.hostname == base.hostname and \
+           (referrer.path == base.path or
+            referrer.path.startswith(base.path + '/')):
+            environ['HTTP_REFERER'] = urlparse.urlunsplit(
+                (base.scheme, base.netloc,
+                 referrer.path, referrer.query, referrer.fragment))
+
     return fcgi_frontend.dispatch_request(environ, start_response)
 
 fcgi_frontend._fcgi.WSGIServer(my_dispatch_request).run()
