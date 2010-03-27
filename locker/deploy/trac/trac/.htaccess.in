@@ -1,0 +1,19 @@
+AuthType SSLCert
+AuthSSLCertAuthoritative off
+AuthSSLCertVar SSL_CLIENT_S_DN_Email
+AuthSSLCertStripSuffix @MIT.EDU
+Require valid-user
+AuthOptional on
+
+RewriteEngine on
+
+RewriteCond %{HTTPS} =on
+RewriteRule ^logout http://%{SERVER_NAME}%{REQUEST_URI} [R,L]
+
+RewriteCond %{REQUEST_URI} !^/@ADDREND@/trac.fcgi
+RewriteRule ^(.*)$ /@ADDREND@/trac.fcgi/$1 [L]
+
+<Files login>
+AuthOptional off
+ErrorDocument 401 /__scripts/needcerts
+</Files>
