@@ -53,18 +53,21 @@ attach "$lname" 2>/dev/null
 
 echo 
 echo "When you installed the software, you chose a URL"
-echo "that starts with http://scripts.mit.edu/~$lname/."
-echo "Please enter the full URL where this software was"
-echo "installed.  (This should correspond to a directory"
-echo "in /mit/$lname/web_scripts/.)"
-printf "%s" "URL: http://scripts.mit.edu/~$lname/"
+echo "that starts with http://$lname.scripts.mit.edu/"
+echo "(for software installed after March 2009) or"
+echo "http://scripts.mit.edu/~$lname/ (for software"
+echo "installed before then)."
+echo "Please enter the new-style full URL where this"
+echo "software was installed.  (This should correspond"
+echo "to a directory in /mit/$lname/web_scripts/.)"
+printf "%s" "URL: http://$lname.scripts.mit.edu/"
 read addrend
 
 addrend=`perl -0e 'print $ARGV[0] =~ /^([\w\/-]*[\w-])\/*$/' -- "$addrend"`
 if [ "$addrend" = "" ]; then
     echo
     echo "ERROR:"
-    echo "You must enter one or more characters after ~$lname/"
+    echo "You must enter one or more characters after mit.edu/"
     echo "The completed address must only contain a-z, 0-9, and /."
     exit 1
 fi
@@ -145,7 +148,6 @@ if [ "$sqldb" = "${addrend}1" ]; then
             echo "A one-day-old backup of your SQL database is"
             echo "available in /mit/sql/backup/$lname".
         fi
-        exit
     else
         echo "ERROR:"
         echo "The database $lname+$addrend"
@@ -156,5 +158,5 @@ if [ "$sqldb" = "${addrend}1" ]; then
     fi
 fi
 echo
-echo "The installation in http://scripts.mit.edu/~$lname/$addrend"
+echo "The installation in http://$lname.scripts.mit.edu/$addrend"
 echo "has been successfully uninstalled."
