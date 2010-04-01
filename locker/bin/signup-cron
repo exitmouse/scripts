@@ -9,7 +9,7 @@ if [ ! -d "/mit/$lname/cron_scripts/" ]; then
   fs sa /mit/$lname/cron_scripts system:authuser none
   fs sa /mit/$lname/cron_scripts daemon.scripts write
   DATE=`date`
-  signupuser=`echo "$principal" | sed 's/@.*$//'`
+  signupuser=`echo "$principal" | sed 's/[/@].*$//'`
   sed '/SCRIPTS_USER/s//'"$lname"'/g' /mit/scripts/bin$scriptsdev/crontab | sed '/ATHENA_USER/s//'"$signupuser"'/g' | sed '/SCRIPTS_DATE/s//'"$DATE"'/g' > /mit/$lname/cron_scripts/crontab
   echo "By default, output from cron jobs for the $lname locker will be mailed"
   echo "to $signupuser@mit.edu.  You should edit /mit/$lname/cron_scripts/crontab"
