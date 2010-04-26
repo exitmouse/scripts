@@ -11,6 +11,7 @@ open(FILE, "contemp.php");
 my $a = <FILE>;
 close(FILE);
 $a =~ s/adminpass/$admin_password/g;
+$a =~ s|\$timezone\s*= '';|\$timezone = 'US/Eastern';|g;
 $a =~ s/\$phpicalendar_publishing/\/\/ WARNING: The scripts.mit.edu maintainers have had to disable this feature on scripts.mit.edu because it contains a serious security vulnerability that has not been addressed by the software\'s authors.  Please do not try to enable this feature\n\$phpicalendar_publishing/;
 open(FILE, ">config.inc.php");
 print FILE $a;
