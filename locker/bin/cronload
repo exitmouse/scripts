@@ -1,14 +1,11 @@
 #!/bin/sh
 
-usage="Usage \"$0 [-l lockername] crontab\""
+usage="Usage \"$0 [-l lockername] [-h] crontab\""
 while getopts "l:h" options; do
     case $options in 
         l ) lname=$OPTARG;;
         h ) echo "$usage"; exit 0;;
-        \? ) echo "$usage"
-            exit 1;;
-        * ) echo "$usage"
-            exit 1;;
+        * ) echo "$usage"; exit 1;;
     esac
 done
 shift `expr $OPTIND - 1`
