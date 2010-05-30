@@ -208,7 +208,11 @@ if [ "$create_scripts_dir" -eq 1 ]; then
 fi
 
 if [ "$wizard" != "" ]; then
-  vsshrun "/mit/$ailocker/wizard/bin/wizard" "install" "$@" "$wizard" "$lroot/web_scripts/$addrend"
+  if [ "$create_scripts_dir" -eq 1 ]; then
+    vsshrun "/mit/$ailocker/wizard/bin/wizard" "install" "--web-stub-path" "$lroot/web_scripts/$addrend" "$@" "$wizard" "$lroot/Scripts/$deploy/$addrend"
+  else
+    vsshrun "/mit/$ailocker/wizard/bin/wizard" "install" "$@" "$wizard" "$lroot/web_scripts/$addrend"
+  fi
   exit 0
 fi
 
