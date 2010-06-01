@@ -106,14 +106,18 @@ echo Checking the status of your scripts.mit.edu account...
 attach scripts 2>/dev/null
 . "/mit/scripts/bin$scriptsdev/signup-web"
 
-echo
-echo "Your new copy of $sname will appear on the web at a URL"
-echo "that starts with http://$lname.scripts.mit.edu/"
-echo "Please decide upon a complete URL and enter it below."
-echo "You must enter one or more characters after mit.edu/"
-echo "The completed address must only contain a-z, 0-9, and /."
-printf "Desired address: http://$lname.scripts.mit.edu/"
-read addrend
+if [ -n "$SCRIPTS_INSTALL_ADDREND" ]; then
+    addrend=$SCRIPTS_INSTALL_ADDREND
+else
+    echo
+    echo "Your new copy of $sname will appear on the web at a URL"
+    echo "that starts with http://$lname.scripts.mit.edu/"
+    echo "Please decide upon a complete URL and enter it below."
+    echo "You must enter one or more characters after mit.edu/"
+    echo "The completed address must only contain a-z, 0-9, and /."
+    printf "Desired address: http://$lname.scripts.mit.edu/"
+    read addrend
+fi
 
 addrend=`perl -0e 'print $ARGV[0] =~ /^([\w\/-]*[\w-])\/*$/' -- "$addrend"`
 if [ "$addrend" = "" ]; then
