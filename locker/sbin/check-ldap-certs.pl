@@ -3,8 +3,11 @@
 use strict;
 use File::Basename;
 use Date::Parse;
+use Sys::Hostname;
 
 my @servers = qw(cats-whiskers.mit.edu pancake-bunny.mit.edu real-mccoy.mit.edu busy-beaver.mit.edu bees-knees.mit.edu);
+
+my $hostname = hostname();
 
 my $now = time();
 
@@ -24,6 +27,6 @@ foreach my $server (@servers) {
   my $time = str2time($exp);
 
   if ($verbose || ($time - $now) <= WARNING) {
-    printf "Certificate expiring in %.2f days: %s\n", (($time - $now) / (60.0*60*24)), $server;
+    printf "$hostname: Certificate expiring in %.2f days: %s\n", (($time - $now) / (60.0*60*24)), $server;
   }
 }
