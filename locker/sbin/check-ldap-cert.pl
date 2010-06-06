@@ -5,7 +5,7 @@ use File::Basename;
 use Date::Parse;
 use Sys::Hostname;
 
-my @servers = qw(cats-whiskers.mit.edu pancake-bunny.mit.edu real-mccoy.mit.edu busy-beaver.mit.edu bees-knees.mit.edu);
+my @servers = qw(localhost);
 
 my $hostname = hostname();
 
