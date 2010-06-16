@@ -31,3 +31,11 @@ if [ -z "$lname" ]; then
     exit 1
 fi
 athrun scripts scripts-ssh "$lname" /usr/local/bin/cronload "$1" "$cwd" 2>/dev/null
+if ! grep -q "^MAILTO=" "$1"; then
+    echo "WARNING: You have no MAILTO= variable set. This means any"
+    echo "cron errors will go to $lname@scripts.mit.edu (your mail_scripts"
+    echo "account), which is almost certainly not what you want!"
+    echo "Please add a MAILTO= line, e.g., MAILTO=${EMAIL:-${ATHENA_USER:-$USER}@mit.edu},"
+    echo "to your crontab. If you do not want to receive errors, set"
+    echo 'MAILTO="".'
+fi
