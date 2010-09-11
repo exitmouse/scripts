@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 copyTo='/mit/scripts/cron_scripts/rpm-sync/'
 packages=`mktemp --tmpdir rpmlist.XXXXXX`

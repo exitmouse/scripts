@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 echo "Entering correct directory..."
 mkdir -p /mit/scripts/cron_scripts/rpm-sync/
@@ -29,7 +29,7 @@ done
 
 if [ `grep -c -v "missing" missing.rpms` -gt 0 ]; then
     echo "Sending email..."
-    cat missing.rpms | mailx -s "scripts.mit.edu servers are out of sync" root@scripts.mit.edu
+    cat missing.rpms | mail -s "scripts.mit.edu servers are out of sync" root@scripts.mit.edu
 else
     echo "No email needs to be sent! scripts.mit.edu is up to date."
 fi
