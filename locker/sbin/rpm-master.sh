@@ -7,7 +7,7 @@ cd /mit/scripts/cron_scripts/rpm-sync/
 echo "Cleaning up environment..."
 rm -rf *.rpmlist *.diff rpmlist.master missing.rpms
 
-servers=`finger @rack-forward | grep "\->" | grep EDU | awk '{print $2"' | cut -d: -f1 | sort | uniq`
+servers=`finger @scripts-director.mit.edu | grep "\->" | grep EDU | awk '{print $2}' | cut -d: -f1 | sort | uniq`
 
 for server in $servers; do
     echo "Connecting to $server..."
