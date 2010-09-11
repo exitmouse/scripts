@@ -27,7 +27,7 @@ for server in *.rpmlist; do
     echo >> missing.rpms
 done
 
-if [ `grep -c -v "missing" missing.rpms` -gt 0 ]; then
+if [ `egrep -c -v '(missing)|(^$)' missing.rpms` -gt 0 ]; then
     echo "Sending email..."
     cat missing.rpms | mail -s "scripts.mit.edu servers are out of sync" root@scripts.mit.edu
 else
