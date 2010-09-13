@@ -1,0 +1,137 @@
+% \pagestyle{empty} % no page numbers
+
+\addtolength{\topmargin}{-1.25in}
+\addtolength{\textheight}{2in}
+\frenchspacing % uniform spacing
+\hyphenpenalty=10000 % no hyphenation
+\rightskip=0pt plus1.4in % add some stretchy glue to right side
+
+%%% Make LaTeX stuff easier to typeset
+
+\def\cmd#1{{\tt $\backslash$#1}}
+
+%\def\example#1{\begin{tabular}{p{0.5\textwidth}p{0.5\textwidth}} #1 &%
+%\begin{verbatim}
+%#1
+%\end{verbatim} \end{tabular}}
+
+%\def\example#1{\verb @#1@}
+
+%%% Set up handling of titles for slides
+
+\newlength{\titl@wd} %% Length of title
+\newlength{\titl@rulewidth} %% Thickness of underlining
+\setlength{\titl@rulewidth}{0.15ex}
+
+\def\titlesize{\large}
+\def\textsize{\normalsize}
+
+\def\mktitle{\slidetitle}
+
+\def\slidetitle{\@ifstar{\@nocontentstitle}{\@contentstitle}}
+
+\def\@contentstitle#1{%
+  \addcontentsline{toc}{slide}{#1}%
+  \@nocontentstitle{#1}}
+
+\def\@nocontentstitle#1{{%Makes the title of the slide
+ \def\th@title{{\titlesize \bf #1}}
+ \settowidth{\titl@wd}{\th@title}
+ \flushleft\th@title\hspace{-\titl@wd}%This comment necessary for spacing
+ \rule[-.3\baselineskip]{\textwidth}{\titl@rulewidth}\hfil\par
+}}
+
+%%% Set up figure and table environments
+
+%% Some required counters
+\newcounter{fig@re}
+\setcounter{fig@re}{0}
+
+\newcounter{t@ble}
+\setcounter{t@ble}{0}
+
+%% The environments themselves
+\newenvironment{figure}
+               {\@floatimitator{fig@re}}
+               {}
+
+\newenvironment{table}
+                {\@floatimitator{t@ble}}
+                {}
+
+%% A macro to detect [] stuff
+\def\@floatimitator#1{%
+  \@ifnextchar[%
+    {\@xfloatimitator{#1}}% [] stuff present
+    {\@regfloatimitator{#1}}} % call different things depending on whether location specifier is present
+
+\def\@regfloatimitator#1{%
+  \stepcounter{#1}%
+  \def\caption##1{%
+    {\def\@currentlabel{\csname the#1\endcsname}%
+    \m@kecaption{\csname #1num\endcsname}{##1}}}}
+
+\def\@xfloatimitator#1[#2]{\@regfloatimitator{#1}}  % just ignore the [] stuff
+
+%% Caption starter definitions
+\def\fig@renum{\fig@rename~\thefig@re}
+\def\t@blenum{\t@blename~\thet@ble}
+
+\def\fig@rename{Figure}
+\def\t@blename{Table}
+
+%% Macro to make caption itself
+\long\def\m@kecaption#1#2{%
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{#1: #2}%
+  \ifdim \wd\@tempboxa >\hsize
+    #1: #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+  \fi
+  \vskip\belowcaptionskip}
+
+%% Some more lengths to control caption positioning
+\newlength{\abovecaptionskip}
+\setlength{\abovecaptionskip}{0pt}
+
+\newlength{\belowcaptionskip}
+\setlength{\belowcaptionskip}{0pt}
+
+
+%%% Label handling
+
+%% Fix the way labels are handled...
+\def\label#1{\@bsphack
+  \protected@write\@auxout{}%
+         {\string\newlabel{#1}{{\@currentlabel}{\theslide}}}%
+  \@esphack}
+
+%% define the standard label to just be slide
+\def\@currentlabel{\theslide}
+
+
+%% table of contents stuff
+\def\addcontentsline#1#2#3{%
+  \addtocontents{#1}{\protect\contentsline{#2}{#3}{\theslide}}}
+
+\newcommand\tableofcontents{%
+    \thispagestyle{empty}%
+    \addtocounter{slide}{-1}%
+    \slidetitle*{\contentsname
+        \@mkboth{%
+           \MakeUppercase\contentsname}{\MakeUppercase\contentsname}}%
+    \begingroup
+      \tiny
+        \@starttoc{toc}%
+    \endgroup
+    }
+
+\newcommand*\l@slide{\@dottedtocline{0}{1.5em}{2.3em}}
+
+\newcommand\contentsname{Contents}
+\newcommand\@pnumwidth{1.55em}
+\newcommand\@tocrmarg{2.55em}
+\newcommand\@dotsep{4.5}
+\setcounter{tocdepth}{0}

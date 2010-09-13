@@ -1,0 +1,6 @@
+\frametitle {\texttt{mod\_auth\_optional}}
+  \begin{itemize}
+  \item \texttt{mod\_auth\_optional} subverts the authorization
+    process to allow you to serve different pages to users with
+    certificates and users without certificates.
+  \end{itemize}
