@@ -11,7 +11,7 @@ servers=`finger @scripts-director.mit.edu | grep "\->" | grep EDU | awk '{print 
 
 for server in $servers; do
     echo "Connecting to $server..."
-    ssh $server /mit/scripts/sbin/rpmlist.sh 2>&1 >&3 | grep -Fxv 'If you have trouble logging in, see http://scripts.mit.edu/faq/41/.' >&2 3>&1
+    { ssh $server /mit/scripts/sbin/rpmlist.sh 2>&1 >&3 | grep -Fxv 'If you have trouble logging in, see http://scripts.mit.edu/faq/41/.';} 3>&2 >&1
 done
 
 echo "Creating master package list..."
