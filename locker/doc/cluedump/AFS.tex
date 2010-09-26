@@ -1,0 +1,65 @@
+\subsection{AFS}
+
+\begin{frame}
+  \frametitle{AFS access controls}
+  \begin{itemize}
+  \item AFS enforces server side access controls.
+  \item On Athena systems: user's password $\to$ Kerberos tickets
+    $\to$ AFS tokens, which authenticate the client to the AFS server.
+  \item On scripts, we don't have the user's password or tickets.
+  \item User's scripts are not publicly readable.
+  \item Access is controlled through a single {\tt daemon.scripts} AFS
+    user.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Isolating users on scripts}
+  \begin{itemize}
+  \item If all users share {\tt daemon.scripts} AFS tokens, how are
+    they prevented from accessing each other's {\tt web\_scripts}?
+  \item On scripts, we enforce additional restrictions in the AFS
+    kernel module.
+    \begin{itemize}
+    \item \texttt{afsAccessOK()} in
+      \texttt{openafs/src/afs/VNOPS/afs\_vnop\_access.c}
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \only<1>{You can only use {\tt daemon.scripts} credentials to access
+    files in a volume with volume ID equal to your UID,}%
+  \only<2>{or the file is {\tt system:anyuser} readable
+    anyway,\vspace{\baselineskip}}%
+  \only<3>{or the {\tt apache} or {\tt postfix} users are doing a {\tt
+      stat()},\vspace{\baselineskip}}%
+  \only<4>{or the {\tt apache} user is trying to read a file with mode
+    {\tt 777},\vspace{\baselineskip}}%
+  \only<5>{or the {\tt root} or {\tt signup} users are accessing file
+    with the special {\tt D} or {\tt E} bits.}%
+
+\begin{footnotesize}
+\begin{semiverbatim}
+ int
+ afs_AccessOK(struct vcache *avc, afs_int32 arights,
+              struct vrequest *areq, afs_int32 check_mode_bits)
+ \{
+     \ldots
++    if (\alert<1>{!(areq->realuid == avc->fid.Fid.Volume)} &&
++        \alert<2>{!((avc->anyAccess | arights) == avc->anyAccess)} &&
++        \alert<3>{!(arights == PRSFS_LOOKUP && areq->realuid == HTTPD_UID) &&}
++        \alert<3>{!(arights == PRSFS_LOOKUP && areq->realuid == POSTFIX_UID)} &&
++        \alert<4>{!(arights == PRSFS_READ && areq->realuid == HTTPD_UID &&}
++        \alert<4>{  avc->m.Mode == 0100777)} &&
++        \alert<5>{!(PRSFS_USR3 == afs_GetAccessBits(avc, PRSFS_USR3, areq) &&}
++        \alert<5>{  areq->realuid == 0) &&}
++        \alert<5>{!(PRSFS_USR4 == afs_GetAccessBits(avc, PRSFS_USR4, areq) &&}
++        \alert<5>{  (areq->realuid == 0 || areq->realuid == SIGNUP_UID))}) \{
++       return 0;
++    \}
+     \ldots
+\end{semiverbatim}
+\end{footnotesize}
+\end{frame}
+
