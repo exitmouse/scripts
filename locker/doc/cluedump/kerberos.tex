@@ -1,0 +1,47 @@
+\subsection{Kerberos}
+
+\begin{frame}
+  \frametitle{Group locker support}
+
+  \begin{itemize}
+  \item ``Users'' on scripts are actually lockers.
+  \item User IDs are actually locker volume IDs.
+    \pause
+  \item Kerberos is modified to let users SSH in as any locker they
+    administrate.
+    \begin{itemize}
+    \item Replaced the \texttt{.k5login} mechanism:
+      \texttt{krb5\_kuserok()} in
+      \texttt{krb5/src/lib/krb5/os/kuserok.c}
+    \item Calls a Perl script \texttt{/usr/local/sbin/admof} to do the
+      actual check.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{footnotesize}
+\begin{semiverbatim}
+ krb5_boolean KRB5_CALLCONV
+ krb5_kuserok(krb5_context context, krb5_principal principal,
+              const char *luser)
+ \{
+     \ldots
++    if ((pid = fork()) == -1) \{
++       free(princname);
++       return(FALSE);
++    \}
++    if (pid == 0) \{
++#define ADMOF_PATH "/usr/local/sbin/ssh-admof"
++        exec(ADMOF_PATH, ADMOF_PATH, (char *) luser, princname, NULL);
++        exit(1);
++    \}
++    if (waitpid(pid, &status, 0) > 0 && WIFEXITED(status) &&
++        WEXITSTATUS(status) == 33) \{
++        isok = TRUE;
++    \}
+     \ldots
+ \}
+\end{semiverbatim}
+\end{footnotesize}
+\end{frame}

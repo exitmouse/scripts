@@ -1,0 +1,89 @@
+\section{Services}
+
+\subsection{Web}
+\begin{frame}
+  \frametitle{Apache}
+  \begin{itemize}
+      \item Everyone wants Apache
+      \item Apache's default configuration isn't safe for scripting
+      \item Scripting \emph{requires} code execution---mod\_php, mod\_perl, mod\_python
+      \item Apache normally runs everything as apache/nobody
+      \item How to secure?
+      \pause
+      \item suEXEC---allows Apache to spawn a process as the user\ldots
+      \item {\ldots}even for static content!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{suEXEC}
+  \begin{itemize}
+    \item setuid program
+    \item Passed the request by Apache
+    \item Verifies that the script is in the {\tt web\_scripts} directory
+    \item Switches to the uid of the file and executes
+    \item Even for static files!
+  \end{itemize}
+\end{frame}
+
+\subsection{Mail}
+
+\begin{frame}[fragile]
+  \frametitle{Postfix}
+  \begin{itemize}
+    \item Standard Postfix server
+    \item No local mailboxes
+    \item All mail is passed to procmail
+  \end{itemize}
+  \begin{verbatim}mailbox_command = /usr/bin/procmail -t \
+-a "${EXTENSION}" ~/mail_scripts/procmailrc\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{procmail}
+  \begin{itemize}
+    \item Reads \verb|~/mail_scripts/procmailrc| from user's home directory
+    \item Users can do whatever they want with messages
+    \item AFS causes problems---No way to know if failure is temporary (file server is down) or permanent (user isn't signed up for mail scripts)
+    \item All procmail failures are treated as temporary, so mail is queued
+  \end{itemize}
+\end{frame}
+
+\subsection{Cron (``Shortjobs'')}
+
+\begin{frame}[fragile]
+  \frametitle{Cron (cronie)}
+  \begin{itemize}
+    \item Crontabs are currently stored locally on scripts servers
+    \item {\tt cronload} command loads the crontabs from
+      \verb|~/cron_scripts/crontab| \pause
+    \item Needs improvement
+    \item Cron does not fail over with Web and Mail
+    \item Plan to move crontabs into AFS and do hot failover
+  \end{itemize}
+\end{frame}
+
+\subsection{SQL}
+
+\begin{frame}
+  \frametitle{sql.mit.edu}
+  Though scripts.mit.edu makes use of sql.mit.edu, it's a separate SIPB service with different maintainers.
+\begin{itemize}
+\item sql.mit.edu provides MySQL databases to scripts users and anyone else
+\item SQL data is stored locally, replicated across multiple servers
+\item Nightly backups go into AFS
+\end{itemize}
+\end{frame}
+
+\subsection{Version control}
+
+\begin{frame}
+  \frametitle{SVN and Git hosting}
+  \begin{itemize}
+    \item New service (September 2008), not well documented
+    \item svn://\textit{username}.scripts.mit.edu/ and git://\textit{username}.scripts.mit.edu/
+    \item Uses suEXEC to run a svnserve / git-daemon as the user
+    \item /mit/\textit{username}/Scripts/\{svn,git\}
+    \item git:// is read-only, so future plans for svn+ssh:// and git+ssh://
+  \end{itemize}
+\end{frame}
