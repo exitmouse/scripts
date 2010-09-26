@@ -5,8 +5,6 @@ To set up a new LDAP server:
 - We want to run the directory server as its own user, so create fedora-ds
   root# env NSS_NONLOCAL_IGNORE=1 useradd -r -d /var/lib/dirsrv fedora-ds
 - root# yum install -y policycoreutils-python
-- Temporarily move away the existing slapd-scripts folder
-  root# mv /etc/dirsrv/slapd-scripts{,.bak}
 - root# /usr/sbin/setup-ds.pl
     - Choose a typical install
     - Tell it to use the fedora-ds user and group
@@ -15,12 +13,10 @@ To set up a new LDAP server:
     - Suffix: dc=scripts,dc=mit,dc=edu
     - Input directory manager password
       (this can be found in  ~/.ldapvirc)
-- Move the schema back
-  root# cp -R /etc/dirsrv/slapd-scripts.bak/{.svn,*} /etc/dirsrv/slapd-scripts
-  root# rm -Rf /etc/dirsrv/slapd-scripts.bak
+        [XXX: Got error: sh: semanage: command not found; turns out this is in
+        policycoreutils-python.  Don't know if this will cause problems.]
 - yum install ldapvi
 - Check if dirsrv starts: /sbin/service dirsrv start
-  then turn it back off: service dirsrv stop
 - Apply the following configuration changes.  If you're editing
   dse.ldif, you don't want dirsrv to be on, otherwise it will
   overwrite your changes. [XXX: show how to do these changes with
@@ -44,13 +40,17 @@ nsSaslMapRegexString: \(.*\)
 nsSaslMapBaseDNTemplate: uid=\1,ou=People,dc=scripts,dc=mit,dc=edu
 nsSaslMapFilterTemplate: (objectClass=posixAccount)
 
+- /sbin/service dirsrv stop
+- Add the scripts schemas to /var/lib/dirsrv/slapd-scripts [XXX: I don't
+  know how to do this, but placing them in /etc might be sufficient?]
 - Put LDAP keytab (ldap/hostname.mit.edu) in /etc/dirsrv/keytab.  Make
   sure you chown/chgrp it to be readable by fedora-ds
 - Uncomment and modify in /etc/sysconfig/dirsrv: KRB5_KTNAME=/etc/dirsrv/keytab ; export KRB5_KTNAME
+- mkdir -p /var/run/dirsrv
 - chown fedora-ds:fedora-ds /var/run/dirsrv
 - chmod 755 /var/run/dirsrv
-- /sbin/service dirsrv start
-- Use ldapvi -b cn=config to add these indexes (8 of them):
+- /sbin/service dirsrv restart
+- Use ldapvi -b cn=config to add these indexes:
 
 add cn=apacheServerName, cn=index, cn=userRoot, cn=ldbm database, cn=plugins, cn=config
 objectClass: top
@@ -190,8 +190,6 @@ nsDS5ReplicaBindDN: uid=ldap/cats-whiskers.mit.edu,ou=People,dc=scripts,dc=mit,d
 nsDS5ReplicaBindDN: uid=ldap/pancake-bunny.mit.edu,ou=People,dc=scripts,dc=mit,dc=edu
 nsDS5ReplicaBindDN: uid=ldap/whole-enchilada.mit.edu,ou=People,dc=scripts,dc=mit,dc=edu
 nsDS5ReplicaBindDN: uid=ldap/real-mccoy.mit.edu,ou=People,dc=scripts,dc=mit,dc=edu
-nsDS5ReplicaBindDN: uid=ldap/better-mousetrap.mit.edu,ou=People,dc=scripts,dc=mit,dc=edu
-nsDS5ReplicaBindDN: uid=ldap/old-faithful.mit.edu,ou=People,dc=scripts,dc=mit,dc=edu
 # ADD SERVERS HERE AS YOU ADD NEW SERVERS
 nsds5ReplicaPurgeDelay: 604800
 nsds5ReplicaLegacyConsumer: off
@@ -201,7 +199,7 @@ nsDS5ReplicaType: 3
         out.)  You might wonder why we are binding to all servers;
         weren't we going to replicate from only one server?  That is
         correct, however, simply binding won't mean we will receive
-        updates; we have to setup the $MASTER to send data $SLAVE.
+        updates; we have to setup the $MASTER to send data $SALVE.
 
     3. Although we allowed those uids to bind, that user information
        doesn't exist on $SLAVE yet.  So you'll need to create the entry
@@ -241,9 +239,7 @@ nsDS5ReplicaBindMethod: SASL/GSSAPI
 nsDS5ReplicaUpdateSchedule: "0000-2359 0123456"
 nsDS5ReplicaTimeout: 120
 
-    4. Reboot the server `service dirsrv restart`, then run the
-    replication. (Don't fold this into the previous step!  You might
-    nuke your database!)
+    4. Run the replication. (you could fold this into the previous step)
 
 # under cn="GSSAPI Replication to $SLAVE", cn=replica, cn="dc=scripts,dc=mit,dc=edu", cn=mapping tree, cn=config
 nsDS5BeginReplicaRefresh: start

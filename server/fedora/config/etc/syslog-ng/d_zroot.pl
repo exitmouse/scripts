@@ -100,7 +100,6 @@ while (1) {
 	} elsif ($message =~ m|^Received disconnect from|) {
 	} elsif ($message =~ m|^Postponed keyboard-interactive|) {
 	} elsif ($message =~ m|^Failed keyboard-interactive/pam|) {
-	} elsif ($message =~ m|^Did not receive identification string from|) {
 	} elsif ($message =~ m|^fatal: Read from socket failed: Connection reset by peer$|) {
 	} elsif ($message =~ m|^reverse mapping checking getaddrinfo|) {
 	} elsif ($message =~ m|^pam_succeed_if\(sshd\:auth\)\:|) {
