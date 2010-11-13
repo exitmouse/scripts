@@ -1,0 +1,5 @@
+#!/bin/sh
+echo Adding iptables rules.
+iptables -t nat -A OUTPUT -d 18.181.0.46 -j DNAT --to-destination 18.181.0.229
+iptables -t nat -A OUTPUT -d 18.181.0.43 -j DNAT --to-destination 18.181.0.229
+iptables -t nat -A OUTPUT -d 18.181.0.50 -j DNAT --to-destination 18.181.0.229

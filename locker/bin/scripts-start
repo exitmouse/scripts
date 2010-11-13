@@ -3,12 +3,8 @@
 choices () {
     echo 'mediawiki MediaWiki'
     echo 'wordpress WordPress'
-    echo 'joomla Joomla'
-    echo 'e107 e107'
     echo 'gallery2 Gallery2'
     echo 'phpbb phpBB'
-    echo 'advancedbook Advanced Guest Book'
-    echo 'phpical PHP iCalendar'
     echo 'trac Trac'
     echo 'turbogears TurboGears'
     echo 'django Django'

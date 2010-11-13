@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if false; then
+    echo "Scripts signups are temporarily unavailable.  Please"
+    echo "check back later."
+    exit 1
+fi
+
 if [ "$initlname" = "" ]; then
   if [ "$lname" = "" ]; then
     initlname=0
@@ -82,7 +88,7 @@ if [ "$ans" != "yes" ]; then
   echo
   echo "ERROR:"
   echo "It appears as though you are not an administrator of the locker <$lname>."
-  echo "Try running \"fs sa /mit/$lname $afsuser all\" and starting over."
+  echo "Try running \"fs setacl /mit/$lname $afsuser all\" and starting over."
   echo "Contact scripts@mit.edu if you are unable to solve the problem."
   exit 1
 fi

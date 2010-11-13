@@ -1,0 +1,5 @@
+#!/bin/sh
+attach -q scripts
+LD_PRELOAD=/mit/scripts/scripts-test/@sys/scripts-test-preload.so
+export LD_PRELOAD
+exec firefox
