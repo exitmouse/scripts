@@ -1,11 +1,5 @@
 #!/bin/bash
 
-if false; then
-    echo "Scripts signups are temporarily unavailable.  Please"
-    echo "check back later."
-    exit 1
-fi
-
 if [ "$initlname" = "" ]; then
   if [ "$lname" = "" ]; then
     initlname=0
