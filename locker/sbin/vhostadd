@@ -71,4 +71,4 @@ scriptsVhostAccount: $user_dn
 scriptsVhostDirectory: ${subdir#/}
 EOF
 
-exec ldapvi --bind sasl -Y GSSAPI -h scripts4.mit.edu -b dc=scripts,dc=mit,dc=edu --add --in "$tmpfile"
+exec ldapvi --bind sasl -Y GSSAPI -h scripts5.mit.edu -b dc=scripts,dc=mit,dc=edu --add --in "$tmpfile"
