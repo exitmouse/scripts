@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
 import os, os.path, sys
-from trac.web import fcgi_frontend
+from trac.web.main import dispatch_request
+from trac.web._fcgi import WSGIServer
 import urlparse
 
 env_path = os.getcwd()+'/tracdata'
@@ -37,7 +38,7 @@ def setup_env():
     except Exception, e: # e.g. no database connection
         env.log.exception(e)
     if env.needs_upgrade():
-        fcgi_frontend._fcgi.WSGIServer(send_upgrade_message).run()
+        WSGIServer(send_upgrade_message).run()
         sys.exit(0)
     if hasattr(trac.env, 'env_cache'):
         trac.env.env_cache[env_path] = env
@@ -64,6 +65,6 @@ def my_dispatch_request(environ, start_response):
                 (base.scheme, base.netloc,
                  referrer.path, referrer.query, referrer.fragment))
 
-    return fcgi_frontend.dispatch_request(environ, start_response)
+    return dispatch_request(environ, start_response)
 
-fcgi_frontend._fcgi.WSGIServer(my_dispatch_request).run()
+WSGIServer(my_dispatch_request).run()
