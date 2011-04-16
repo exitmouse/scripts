@@ -38,6 +38,9 @@ chmod 0755, "index.fcgi";
 open HTACCESS, ">.htaccess";
 print HTACCESS <<EOF;
 RewriteEngine On
+
+RewriteRule ^\$ index.fcgi/ [QSA,L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)\$ index.fcgi/\$1 [QSA,L]
