@@ -49,7 +49,7 @@ close HTACCESS;
 chmod 0777, ".htaccess";
 
 chdir "/mit/$USER/Scripts/django/";
-system qw{django-admin startproject}, $name;
+system(qw{django-admin startproject}, $name)==0 or die "\nFailed to create app.\n\n";
 chdir "$name";
 
 open SETTINGS, "settings.py";
