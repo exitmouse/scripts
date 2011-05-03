@@ -1,0 +1,42 @@
+\documentclass{beamer}
+
+\mode<presentation>
+{ \usetheme{Copenhagen} }
+
+\AtBeginSection[]
+{
+   \begin{frame}
+       \frametitle{Outline}
+       \tableofcontents[currentsection]
+   \end{frame}
+}
+
+\usepackage{graphicx}
+
+\title{scripts.mit.edu}
+\author{Quentin Smith \and Geoffrey Thomas \\ \texttt{scripts@mit.edu}}
+\institute{Student Information Processing Board}
+\date{October 28, 2008}
+
+\begin{document}
+
+% Title slide - do not change
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\include{contents}
+\include{services}
+
+\include{backend}
+
+\include{AFS}
+\include{suexec}
+\include{kerberos}
+\include{LDAP}
+\include{httpdmods}
+\include{LVS}
+
+\include{closing}
+
+\end{document}

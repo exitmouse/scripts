@@ -1,0 +1,50 @@
+\subsection{Apache modules}
+
+\begin{frame}[fragile]
+  \frametitle{Apache modules}
+  \begin{itemize}
+  \item We make it easy to do authentication against MIT certificates.
+  \item Both \texttt{https://scripts-cert.mit.edu}, and port
+    \texttt{444} on any scripts hostname, are configured to request
+    client certificates.
+  \item \texttt{mod\_ssl} provides the
+    \texttt{SSL\_CLIENT\_S\_DN\_Email} environment variable, but does
+    not integrate with the Apache authentication and authorization
+    framework.
+  \item Wrote a collection of Apache modules to make this cleaner.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{mod\_auth\_sslcert}}
+  \begin{itemize}
+  \item \texttt{mod\_auth\_sslcert} passes the
+    \texttt{SSL\_CLIENT\_S\_DN\_Email} variable to the Apache
+    authorization handlers.
+  \end{itemize}
+\begin{semiverbatim}
+AuthType SSLCert
+AuthSSLCertVar SSL_CLIENT_S_DN_Email
+AuthSSLCertStripSuffix "@MIT.EDU"
+\end{semiverbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{mod\_authz\_afsgroup}}
+  \begin{itemize}
+  \item \texttt{mod\_authz\_afsgroup} does Apache authorization based
+    on AFS groups.
+  \end{itemize}
+\begin{semiverbatim}
+Require afsgroup system:scripts-team
+\end{semiverbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{mod\_auth\_optional}}
+  \begin{itemize}
+  \item \texttt{mod\_auth\_optional} subverts the authorization
+    process to allow you to serve different pages to users with
+    certificates and users without certificates.
+  \end{itemize}
+\end{frame}

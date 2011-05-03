@@ -1,0 +1,96 @@
+\subsection{suEXEC}
+
+\begin{frame}
+  \frametitle{Serving static content}
+  \begin{itemize}
+  \item The \texttt{apache} user does not have permission to read the
+    user's files directly.
+  \item Both static and dynamic content is served through suEXEC.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,t]
+  \begin{enumerate}
+  \item \texttt{/etc/httpd/conf.d/execsys.conf} is configured to serve
+    static content with the \texttt{cgi-script} handler.
+  \end{enumerate}
+\begin{footnotesize}
+\begin{semiverbatim}
+<Files *.pl>
+        SetHandler cgi-script
+        Options +ExecCGI
+</Files>
+<Files *.php>
+        SetHandler cgi-script
+        Options +ExecCGI
+</Files>
+\ldots
+<Files *.html>
+        SetHandler cgi-script
+        Options +ExecCGI
+</Files>
+<Files *.css>
+        SetHandler cgi-script
+        Options +ExecCGI
+</Files>
+\ldots
+\end{semiverbatim}
+\end{footnotesize}
+\end{frame}
+
+\begin{frame}[fragile,t]
+  \begin{enumerate}
+    \addtocounter{enumi}{1}
+  \item \texttt{openafs/src/afs/VNOPS/afs\_vnop\_access.c} is modified
+    to mark \emph{all} files as executable (!).
+  \end{enumerate}
+\begin{footnotesize}
+\begin{semiverbatim}
+ int
+ afs_access(OSI_VC_DECL(avc), register afs_int32 amode,
+            struct AFS_UCRED *acred)
+ \{
+     register afs_int32 code;
+     struct vrequest treq;
+     struct afs_fakestat_state fakestate;
+     OSI_VC_CONVERT(avc);
+ 
+     AFS_STATCNT(afs_access);
++    amode = amode & ~VEXEC;
+     afs_Trace3(afs_iclSetp, CM_TRACE_ACCESS, ICL_TYPE_POINTER, avc,
+                ICL_TYPE_INT32, amode, ICL_TYPE_OFFSET,
+                ICL_HANDLE_OFFSET(avc->m.Length));
+     \ldots
+ \}
+\end{semiverbatim}
+\end{footnotesize}
+\end{frame}
+
+\begin{frame}[fragile,t]
+  \begin{enumerate}
+    \addtocounter{enumi}{2}
+  \item \texttt{httpd/support/suexec.c} is modified to dispatch static
+    content to \texttt{/usr/local/bin/static-cat}.
+  \end{enumerate}
+\begin{footnotesize}
+\begin{semiverbatim}
++#define STATIC_CAT_PATH "/usr/local/bin/static-cat"
++static const char *static_extensions[] = \{
++    "html",
++    "css",
++    \ldots
++\}
++
+ int main(int argc, char *argv[])
+ \{
+     \ldots
++    if (is_static_extension(cmd)) \{
++        argv[2] = STATIC_CAT_PATH;
++        execv(STATIC_CAT_PATH, &argv[2]);
++        log_err("(%d)%s: static_cat exec failed (%s)\\n", errno,
++                strerror(errno), argv[2]);
++        exit(255);
++    \}
+\end{semiverbatim}
+\end{footnotesize}
+\end{frame}
