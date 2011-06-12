@@ -10,11 +10,11 @@ use POSIX qw(strftime);
 use LWP::UserAgent;
 use URI;
 our @ISA = qw(Exporter);
-our @EXPORT = qw(setup totmp fetch_uri print_login_info press_enter $server $tmp $USER $HOME $sname $deploy $addrend $base_uri $ua $admin_username $requires_sql $addrlast $sqlhost $sqluser $sqlpass $sqldb $admin_password $scriptsdev $human $email);
+our @EXPORT = qw(setup totmp fetch_uri print_login_info press_enter $server $tmp $USER $HOME $scriptsdir $sname $deploy $addrend $base_uri $ua $admin_username $requires_sql $addrlast $sqlhost $sqluser $sqlpass $sqldb $admin_password $scriptsdev $human $email);
 
 our $server = "scripts.mit.edu";
 
-our ($tmp, $USER, $HOME, $sname, $deploy, $addrend, $base_uri, $ua, $admin_username, $requires_sql, $addrlast, $sqlhost, $sqluser, $sqlpass, $sqldb, $admin_password, $scriptsdev, $human, $email);
+our ($tmp, $USER, $HOME, $scriptsdir, $sname, $deploy, $addrend, $base_uri, $ua, $admin_username, $requires_sql, $addrlast, $sqlhost, $sqluser, $sqlpass, $sqldb, $admin_password, $scriptsdev, $human, $email);
 
 $tmp = ".scripts-tmp";
 sub totmp {
@@ -76,6 +76,9 @@ sub setup {
   $ENV{PATH} = '/bin:/usr/bin';
   $USER = $ENV{USER};
   $HOME = $ENV{HOME};
+  $scriptsdir = $HOME;
+  $scriptsdir =~ s/\/Scripts$//;
+  $scriptsdir .= "/Scripts";
   
   ($sname, $deploy, $addrend, $admin_username, $requires_sql, $scriptsdev, $human) = @ARGV;
   chdir "$HOME/web_scripts/$addrend";

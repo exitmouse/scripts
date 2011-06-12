@@ -1,0 +1,9 @@
+#!/bin/sh
+
+sname="git repository"
+deploy="git"
+create_scripts_dir=1
+requires_sql=0
+prompt_username=1
+prompt_password=0
+. /mit/scripts/deploy$scriptsdev/bin/onathena

@@ -1,10 +1,41 @@
 #!/bin/sh
 
+usage="Usage \"$0 [-l lockername] [-h] crontab\""
+while getopts "l:h" options; do
+    case $options in 
+        l ) lname=$OPTARG;;
+        h ) echo "$usage"; exit 0;;
+        * ) echo "$usage"; exit 1;;
+    esac
+done
+shift `expr $OPTIND - 1`
+if [ -z "$1" ]; then
+    echo "$usage"
+    exit 1
+fi
+
 echo "This program should print your new crontab below."
 echo "If it does not do so, something is wrong."
 echo "Feel free to contact scripts@mit.edu for assistance."
 echo
 
+
 cwd=`pwd`
-lname=`perl -e "\\\$temp = \"$cwd\"; \\\$temp =~ /\\\/([^\\\/]+)\\\/cron_scripts/; print \\\$1"`
+if [ -z "$lname" ]; then
+    lname=`perl -e "\\\$temp = \"$cwd\"; \\\$temp =~ /\\\/([^\\\/]+)\\\/cron_scripts/; print \\\$1"`
+fi
+if [ -z "$lname" ]; then
+    echo "ERROR: Could not detect locker name. Make sure to run"
+    echo "cronload from within /mit/lockername/cron_scripts/"
+    echo "(or pass the -l lockername option)"
+    exit 1
+fi
 athrun scripts scripts-ssh "$lname" /usr/local/bin/cronload "$1" "$cwd" 2>/dev/null
+if ! grep -q "^MAILTO=" "$1"; then
+    echo "WARNING: You have no MAILTO= variable set. This means any"
+    echo "cron errors will go to $lname@scripts.mit.edu (your mail_scripts"
+    echo "account), which is almost certainly not what you want!"
+    echo "Please add a MAILTO= line, e.g., MAILTO=${EMAIL:-${ATHENA_USER:-$USER}@mit.edu},"
+    echo "to your crontab. If you do not want to receive errors, set"
+    echo 'MAILTO="".'
+fi
