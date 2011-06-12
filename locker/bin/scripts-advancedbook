@@ -1,6 +1,0 @@
-#!/bin/sh
-
-sname="Advanced Guestbook"
-deploy="advancedbook"
-prompt_username=1
-. /mit/scripts/deploy$scriptsdev/bin/onathena
