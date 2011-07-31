@@ -61,37 +61,43 @@ echo "For documentation, including a link to the Athena rules of use,"
 echo "see <http://scripts.mit.edu/start>."
 echo
 echo "Please report problems with this installer to $aicontact."
-echo
-echo "Are you performing this install for:"
-echo "1. Your personal Athena account"
-echo "2. A locker that you control (a club, a course, etc)"
-echo "If you do not understand this question, you should answer '1'."
-printf "Please enter either '1' or '2' (without quotes): "
-read whofor
-if [ "$whofor" = 1 ]; then
-    lname="${ATHENA_USER:-$USER}"
-elif [ "$whofor" = 2 ]; then
-    echo
-    echo "OK.  $sname will be installed into a locker of your choice that"
-    echo "you control.  Please enter the name of the selected locker below."
-    echo "(For the locker /mit/lsc -- which has a full path of"
-    echo "/afs/athena.mit.edu/activity/l/lsc -- you would simply enter lsc)."
-    printf "Locker name: "
-    read lname
+
+if [ -n "$SCRIPTS_INSTALL_LOCKER" ]; then
+    lname=$SCRIPTS_INSTALL_LOCKER
 else
     echo
-    echo "ERROR:"
-    echo "You must select either '1' or '2'."
-    exit 1
-fi
-while true; do
-    if attach "$lname"; then
-        break
+    echo "Are you performing this install for:"
+    echo "1. Your personal Athena account"
+    echo "2. A locker that you control (a club, a course, etc)"
+    echo "If you do not understand this question, you should answer '1'."
+    printf "Please enter either '1' or '2' (without quotes): "
+    read whofor
+    if [ "$whofor" = 1 ]; then
+        lname="${ATHENA_USER:-$USER}"
+    elif [ "$whofor" = 2 ]; then
+        echo
+        echo "OK.  $sname will be installed into a locker of your choice that"
+        echo "you control.  Please enter the name of the selected locker below."
+        echo "(For the locker /mit/lsc -- which has a full path of"
+        echo "/afs/athena.mit.edu/activity/l/lsc -- you would simply enter lsc)."
+        printf "Locker name: "
+        read lname
+    else
+        echo
+        echo "ERROR:"
+        echo "You must select either '1' or '2'."
+        exit 1
     fi
-    echo "$lname is not a valid locker name."
-    printf "Locker name: "
-    read lname
-done
+    while true; do
+        if attach "$lname"; then
+            break
+        fi
+        echo "$lname is not a valid locker name."
+        printf "Locker name: "
+        read lname
+    done
+    unset whofor
+fi
 lroot="/mit/$lname" 
 
 echo
@@ -100,14 +106,18 @@ echo Checking the status of your scripts.mit.edu account...
 attach scripts 2>/dev/null
 . "/mit/scripts/bin$scriptsdev/signup-web"
 
-echo
-echo "Your new copy of $sname will appear on the web at a URL"
-echo "that starts with http://$lname.scripts.mit.edu/"
-echo "Please decide upon a complete URL and enter it below."
-echo "You must enter one or more characters after mit.edu/"
-echo "The completed address must only contain a-z, 0-9, and /."
-printf "Desired address: http://$lname.scripts.mit.edu/"
-read addrend
+if [ -n "$SCRIPTS_INSTALL_ADDREND" ]; then
+    addrend=$SCRIPTS_INSTALL_ADDREND
+else
+    echo
+    echo "Your new copy of $sname will appear on the web at a URL"
+    echo "that starts with http://$lname.scripts.mit.edu/"
+    echo "Please decide upon a complete URL and enter it below."
+    echo "You must enter one or more characters after mit.edu/"
+    echo "The completed address must only contain a-z, 0-9, and /."
+    printf "Desired address: http://$lname.scripts.mit.edu/"
+    read addrend
+fi
 
 addrend=`perl -0e 'print $ARGV[0] =~ /^([\w\/-]*[\w-])\/*$/' -- "$addrend"`
 if [ "$addrend" = "" ]; then
@@ -208,7 +218,11 @@ if [ "$create_scripts_dir" -eq 1 ]; then
 fi
 
 if [ "$wizard" != "" ]; then
-  vsshrun "/mit/$ailocker/wizard/bin/wizard" "install" "$@" "$wizard" "$lroot/web_scripts/$addrend"
+  if [ "$create_scripts_dir" -eq 1 ]; then
+    vsshrun "/mit/$ailocker/wizard/bin/wizard" "install" "--web-stub-path" "$lroot/web_scripts/$addrend" "$@" "$wizard" "$lroot/Scripts/$deploy/$addrend"
+  else
+    vsshrun "/mit/$ailocker/wizard/bin/wizard" "install" "$@" "$wizard" "$lroot/web_scripts/$addrend"
+  fi
   exit 0
 fi
 

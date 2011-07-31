@@ -1,6 +1,0 @@
-#!/bin/sh
-
-sname="PHP iCalendar"
-deploy="phpical"
-requires_sql=0
-. /mit/scripts/deploy$scriptsdev/bin/onathena

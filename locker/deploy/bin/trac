@@ -53,6 +53,7 @@ $cfg->setval('trac', 'default_charset', 'utf-8');
 $cfg->AddSection('components');
 $cfg->newval('components', 'webadmin.*', 'enabled');
 $cfg->newval('components', 'tracext.git.*', 'enabled') if $repotype eq "git";
+$cfg->newval('components', 'tracext.hg.*', 'enabled') if $repotype eq "hg";
 $cfg->RewriteConfig();
 
 system(qw(/usr/bin/trac-admin tracdata permission add), $human, 'TRAC_ADMIN');

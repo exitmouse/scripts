@@ -38,6 +38,9 @@ chmod 0755, "index.fcgi";
 open HTACCESS, ">.htaccess";
 print HTACCESS <<EOF;
 RewriteEngine On
+
+RewriteRule ^\$ index.fcgi/ [QSA,L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)\$ index.fcgi/\$1 [QSA,L]
@@ -46,7 +49,7 @@ close HTACCESS;
 chmod 0777, ".htaccess";
 
 chdir "/mit/$USER/Scripts/django/";
-system qw{django-admin startproject}, $name;
+system(qw{django-admin startproject}, $name)==0 or die "\nFailed to create app.\n\n";
 chdir "$name";
 
 open SETTINGS, "settings.py";

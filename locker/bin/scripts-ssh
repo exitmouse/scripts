@@ -8,7 +8,7 @@ exec ssh \
 	-o GSSAPIDelegateCredentials=no \
 	-o PreferredAuthentications=gssapi-with-mic \
 	-o ForwardX11=no \
-	-o GlobalKnownHostsFile=/afs/athena.mit.edu/contrib/scripts/ssh/known_hosts \
+	-o GlobalKnownHostsFile=/afs/athena.mit.edu/contrib/scripts/etc/known_hosts \
 	-o UserKnownHostsFile=/dev/null \
 	-t \
 	scripts.mit.edu -l "$lname" "$(printf "''%q " "$@")"
