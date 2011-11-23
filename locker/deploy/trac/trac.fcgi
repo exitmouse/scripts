@@ -19,12 +19,12 @@ From an Athena machine, type
   ssh %s@scripts trac-admin %s wiki upgrade
 to upgrade, and then
   add scripts
-  for-each-server -l %s pkill trac.fcgi
+  for-each-server -l %s pkill -u %s trac.fcgi
 to get this message out of the way.
 
 Please ask the scripts.mit.edu maintainers for help
 if you have any trouble, at scripts@mit.edu.
-''' % (locker, env_path, locker, env_path, locker)]
+''' % (locker, env_path, locker, env_path, locker, locker)]
 
 def setup_env():
     '''Obtain the environment, handling the needs-upgrade check, and cache it.
