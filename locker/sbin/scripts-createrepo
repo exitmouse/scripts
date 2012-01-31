@@ -7,7 +7,8 @@ set -eux
 
 ssh='ssh -o GSSAPIAuthentication=yes -o GSSAPIDelegateCredentials=no'
 
-yum=/afs/athena.mit.edu/contrib/scripts/yum-repos/rpm-fc15
+yum=/afs/athena.mit.edu/contrib/scripts/yum-repos/rpm-fc$(ssh root@scripts.mit.edu 'lsb_release -rs')
+[ -d "$yum" ]
 
 tmp=$($ssh root@scripts.mit.edu "\
 set -eux
