@@ -37,7 +37,7 @@ my $dev_db = make_db("development");
 my $test_db = make_db("test");
 my $prod_db = make_db("production");
 
-system qw{rails -D -d mysql .};
+system qw{rails new -D -d mysql .};
 
 open PUBLIC_HTACCESS, ">public/.htaccess";
 print PUBLIC_HTACCESS <<EOF;
