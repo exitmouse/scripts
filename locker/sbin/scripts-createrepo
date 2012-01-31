@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# Runs createrepo on the primary scripts server and copies the resulting
+# metadata to the live yum repository.
+
+set -eux
+
+yum=/afs/athena.mit.edu/contrib/scripts/yum-repos/rpm-fc15
+
+tmp=$(ssh root@scripts.mit.edu "\
+set -eux
+tmp=\$(mktemp -dt createrepo.XXXXXX)
+createrepo -d -o \"\$tmp\" -- '$yum' >&2
+printf '%s' \"\$tmp\"
+")
+[ "$tmp" ]
+
+new=$(mktemp -d -- "$yum/repodata.XXXXXX")
+rsync -avz -- "root@scripts.mit.edu:$tmp/repodata/" "$new"
+mv -b -T -- "$new" "$yum/repodata"
+rm -rf -- "$yum/repodata~"
+
+ssh root@scripts.mit.edu "\
+set -eux
+rm -rf -- '$tmp'
+"
