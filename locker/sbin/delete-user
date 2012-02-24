@@ -1,0 +1,89 @@
+#!/usr/bin/python
+import ldap
+import ldap.filter
+import pwd
+import sys
+
+actuallyRun = False
+
+def delete_record(l, full_name):
+    if actuallyRun:
+        print "Deleting %s..." % (full_name,)
+        l.delete(full_name)
+    else:
+        print "Would have deleted %s" % (full_name,)
+
+def findUser(l, username):
+    # Try to delete the 
+    user_record, = ll.search_s(
+        "ou=People,dc=scripts,dc=mit,dc=edu",
+        ldap.SCOPE_SUBTREE,
+        ldap.filter.filter_format(
+            "(&(objectClass=posixAccount)" +
+            "(uid=%s))",
+            [username]))
+
+    return user_record
+
+def findGroup(l, username):
+    group_record, = ll.search_s(
+        "ou=Groups,dc=scripts,dc=mit,dc=edu",
+        ldap.SCOPE_SUBTREE,
+        ldap.filter.filter_format(
+            "(&(objectClass=posixGroup)" +
+            "(cn=%s))",
+            [username]))
+
+    return group_record
+
+def findApacheConfig(l, uid):
+    host_records = ll.search_s(
+        "ou=VirtualHosts,dc=scripts,dc=mit,dc=edu",
+        ldap.SCOPE_SUBTREE,
+        ldap.filter.filter_format(
+            "(&(objectClass=apacheConfig)" +
+            "(apacheSuexecUid=%s))",
+            [uid]))
+
+    return host_records
+
+def findVhost(l, full_name):
+    host_records = ll.search_s(
+        "ou=VirtualHosts,dc=scripts,dc=mit,dc=edu",
+        ldap.SCOPE_SUBTREE,
+        ldap.filter.filter_format(
+            "(&(objectClass=scriptsVhost)" +
+            "(scriptsVhostAccount=%s))",
+            [full_name]))
+
+    return host_records
+
+if __name__ == '__main__':
+    (self, user) = sys.argv
+
+    print "Binding to ldap..."
+
+    ll = ldap.initialize("ldapi://%2fvar%2frun%2fslapd-scripts.socket/")
+    ll.simple_bind_s("cn=Directory Manager", open('/etc/signup-ldap-pw').read())
+
+    print "Finding user '%s'..." % (user,)
+    user_record = findUser(ll, user)
+
+    print "Finding group '%s'..." % (user,)
+    group_record = findGroup(ll, user)
+
+    print "Searching for apache configurations..."
+    apache_configs = findApacheConfig(ll, user_record[1]['uidNumber'][0])
+
+    print "Searching for vhost configurations..."
+    vhost_configs = findVhost(ll, user_record[0])
+
+    print "Deleting..."
+    delete_record(ll, user_record[0])
+    delete_record(ll, group_record[0])
+
+    for config in apache_configs:
+        delete_record(ll, config[0])
+
+    for vhost in vhost_configs:
+        delete_record(ll, vhost[0])
