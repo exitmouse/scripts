@@ -9,7 +9,7 @@ actuallyRun = False
 def delete_record(l, full_name):
     if actuallyRun:
         print "Deleting %s..." % (full_name,)
-        l.delete(full_name)
+        l.delete_s(full_name)
     else:
         print "Would have deleted %s" % (full_name,)
 
