@@ -4,6 +4,7 @@ use FindBin qw($Bin);
 use lib $Bin;
 use onserver;
 use Tie::File;
+use Cwd;
 
 setup();
 
@@ -37,7 +38,11 @@ my $dev_db = make_db("development");
 my $test_db = make_db("test");
 my $prod_db = make_db("production");
 
-system qw{rails new . -D -d mysql };
+my $cwd = getcwd;
+system("rails", "new", $cwd ,"-d", "mysql");
+my $appdir = `basename $cwd`;
+chomp $appdir;
+my $appclass = ucfirst $appdir;
 
 open PUBLIC_HTACCESS, ">public/.htaccess";
 print PUBLIC_HTACCESS <<EOF;
@@ -119,15 +124,39 @@ for (@railsfcgi) {
 }
 untie @railsfcgi;
 open RAILSFCGI, ">>public/dispatch.fcgi";
+print RAILSFCGI "#!/usr/bin/ruby\n";
 print RAILSFCGI <<EOF;
+require File.join(File.dirname(__FILE__), '../config/environment')       
+require 'rack'
 
 ## Added by scripts.mit.edu autoinstaller to reload when app code changes
 Thread.abort_on_exception = true
 
-t1 = Thread.new do
-   RailsFCGIHandler.process!
+class Rack::PathInfoRewriter
+  def initialize(app)
+    \@app = app
+  end
+
+  def call(env)
+    env["SCRIPT_NAME"] = ""
+    parts = env['REQUEST_URI'].split('?')
+    env['PATH_INFO'] = parts[0]
+    env['QUERY_STRING'] = parts[1].to_s
+    \@app.call(env)
+  end
 end
 
+
+t1 = Thread.new do
+  dispatch_logger = Logger.new(File.join(Rails.root,'log/dispatcher.log'))
+
+  begin
+    Rack::Handler::FastCGI.run Rack::PathInfoRewriter.new(Rack::URLMap.new("/$appdir" => ${appclass}::Application))
+  rescue => e
+   dispatch_logger.error(e)
+   raise e
+  end
+end
 t2 = Thread.new do
    # List of directories to watch for changes before reload.
    # You may want to also watch public or vendor, depending on your needs.
@@ -194,6 +223,12 @@ t1.join
 t2.join
 ## End of scripts.mit.edu autoinstaller additions
 EOF
+chmod 0755,'public/dispatch.fcgi';
+
+# have to explicitly take a dependency on fcgi
+open GEMFILE, ">>Gemfile";
+print GEMFILE "gem 'fcgi'\n";
+close GEMFILE;
 
 print "Your application is located in:\n";
 print "  /mit/$USER/web_scripts/$addrend/\n";
