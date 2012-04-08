@@ -77,7 +77,7 @@ print "Your git repository is located in:\n";
 print "  $gitbase/$addrend.git/\n";
 print "To clone, run\n  git clone https://$USER.scripts.mit.edu/$addrend/$addrend.git\n\n";
 print "Note: Push over HTTP is a relatively new feature in Git, so if git push fails\n";
-print "try a newer version of Git, e.g. if you're on Athena 'add git' and try again.\n\n";
+print "try a newer version of Git, e.g. if you're on Athena, 'add -f git' and try again.\n\n";
 press_enter;
 
 exit 0;
