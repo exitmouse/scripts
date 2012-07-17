@@ -226,8 +226,11 @@ EOF
 chmod 0755,'public/dispatch.fcgi';
 
 # have to explicitly take a dependency on fcgi
+# ruby1.9 means we need to take a dependency on minitest 
+# for rails console to work
 open GEMFILE, ">>Gemfile";
 print GEMFILE "gem 'fcgi'\n";
+print GEMFILE "gem 'minitest'\n";
 close GEMFILE;
 
 print "Your application is located in:\n";
