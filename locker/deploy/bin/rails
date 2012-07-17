@@ -42,7 +42,21 @@ my $cwd = getcwd;
 system("rails", "new", $cwd ,"-d", "mysql");
 my $appdir = `basename $cwd`;
 chomp $appdir;
-my $appclass = ucfirst $appdir;
+
+open APPLICATION_RB, "config/application.rb";
+my $appclass;
+while(<APPLICATION_RB>) {
+    if (/module (\w+)\n/) {
+	$appclass = $1;
+	last;
+    }
+}
+close APPLICATION_RB;
+if (!$appclass) {
+    open FAILED, ">.failed";
+    close FAILED;
+    die "Couldn't find application class name - plase email scripts\@mit.edu with the names of your locker and the application you tried to create. Sorry!";
+}
 
 open PUBLIC_HTACCESS, ">public/.htaccess";
 print PUBLIC_HTACCESS <<EOF;
