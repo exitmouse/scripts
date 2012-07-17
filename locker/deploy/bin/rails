@@ -83,14 +83,13 @@ RewriteRule ^(.*)\$ dispatch.fcgi [QSA,L]
 # Example:
 #   ErrorDocument 500 /500.html
 
-RewriteBase /$addrend/public/
 EOF
 
 open HTACCESS, ">.htaccess";
 print HTACCESS <<EOF;
 RewriteEngine On
 RewriteRule ^(.*)\$ public/\$1 [QSA,L]
-RewriteBase /$addrend/
+
 EOF
 
 tie my @railsenv, 'Tie::File', 'config/environment.rb';
@@ -151,7 +150,8 @@ t1 = Thread.new do
   dispatch_logger = Logger.new(File.join(Rails.root,'log/dispatcher.log'))
 
   begin
-    Rack::Handler::FastCGI.run Rack::PathInfoRewriter.new(Rack::URLMap.new("/$appdir" => ${appclass}::Application))
+    Rack::Handler::FastCGI.run Rack::PathInfoRewriter.new(Rack::URLMap.new("/$appdir" => ${appclass}::Application,
+                                                                           "/" => ${appclass}::Application))
   rescue => e
    dispatch_logger.error(e)
    raise e
