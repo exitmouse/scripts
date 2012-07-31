@@ -1,5 +1,7 @@
 #!/bin/sh
 
+export LC_ALL=C
+
 copyTo='/mit/scripts/cron_scripts/rpm-sync/'
 packages=`mktemp --tmpdir rpmlist.XXXXXX`
 rpm -qa --queryformat '%{NAME}.%{ARCH}\n' | sort | uniq > $packages

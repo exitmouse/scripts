@@ -1,5 +1,7 @@
 #!/bin/sh
 
+export LC_ALL=C
+
 echo "Entering correct directory..."
 mkdir -p /mit/scripts/cron_scripts/rpm-sync/
 cd /mit/scripts/cron_scripts/rpm-sync/
