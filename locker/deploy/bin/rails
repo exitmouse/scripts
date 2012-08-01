@@ -239,6 +239,9 @@ t2.join
 EOF
 chmod 0755,'public/dispatch.fcgi';
 
+# static-cat doesn't whitelist .txt files
+chmod 0777, 'public/robots.txt'; 
+
 # have to explicitly take a dependency on fcgi
 # ruby1.9 means we need to take a dependency on minitest 
 # for rails console to work
