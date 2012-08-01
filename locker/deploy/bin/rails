@@ -126,6 +126,26 @@ for (@railswelcome) {
 }
 untie @railswelcome;
 
+# set config.action_controller.asset_host for all environments,
+# so urls to static assets are generated correctly
+# regardless of how the app is accessed
+my $rails_assethost = "  config.action_controller.asset_host = \"//$USER.scripts.mit.edu/$appdir/public\"";
+my @environments = ('development', 'production', 'test');
+
+for my $environment (@environments) {
+    tie my @envfile, 'Tie::File', "config/environments/$environment.rb";
+    my $i = 0;
+    for (@envfile) {
+	if (/^end$/) {
+	    last;
+	}
+	++$i;
+    }
+    splice @envfile, $i, 1, ($rails_assethost, 'end');
+    untie @envfile;
+}
+
+
 tie my @railsfcgi, 'Tie::File', 'public/dispatch.fcgi';
 for (@railsfcgi) {
     s/^[^#]*RailsFCGIHandler/## Commented out by scripts.mit.edu autoinstaller\n## RailsFCGIHandler/;
