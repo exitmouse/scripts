@@ -160,16 +160,17 @@ require 'rack'
 ## Added by scripts.mit.edu autoinstaller to reload when app code changes
 Thread.abort_on_exception = true
 
-class Rack::PathInfoRewriter
+# Strip public/dispatch.fcgi out of SCRIPT_NAME so Rails generates nicer URLs
+class ScriptNameRewriter
+  
   def initialize(app)
     \@app = app
   end
 
   def call(env)
-    env["SCRIPT_NAME"] = ""
-    parts = env['REQUEST_URI'].split('?')
-    env['PATH_INFO'] = parts[0]
-    env['QUERY_STRING'] = parts[1].to_s
+    if env['SCRIPT_NAME'] =~ /dispatch\.fcgi/
+      env['SCRIPT_NAME'].gsub!(/public\\/dispatch\.fcgi/,'')
+    end
     \@app.call(env)
   end
 end
@@ -179,8 +180,7 @@ t1 = Thread.new do
   dispatch_logger = Logger.new(File.join(Rails.root,'log/dispatcher.log'))
 
   begin
-    Rack::Handler::FastCGI.run Rack::PathInfoRewriter.new(Rack::URLMap.new("/$appdir" => ${appclass}::Application,
-                                                                           "/" => ${appclass}::Application))
+    Rack::Handler::FastCGI.run ScriptNameRewriter.new(Rack::URLMap.new("/" => ${appclass}::Application))
   rescue => e
    dispatch_logger.error(e)
    raise e
