@@ -252,7 +252,7 @@ close GEMFILE;
 
 print "Your application is located in:\n";
 print "  /mit/$USER/web_scripts/$addrend/\n";
-print "To run programs like rake or script/generate, run\n";
+print "To run programs like rake or rails generate, run\n";
 print "  'ssh -k $USER\@scripts' and cd to the above directory.\n\n";
 press_enter;
 
