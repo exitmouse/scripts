@@ -5,7 +5,6 @@ choices () {
     echo 'wordpress WordPress'
     echo 'gallery2 Gallery2'
     echo 'phpbb phpBB'
-    echo 'joomla Joomla'
     echo 'git Git repository'
     echo 'trac Trac'
     echo 'turbogears TurboGears'
