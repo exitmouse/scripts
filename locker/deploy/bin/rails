@@ -27,8 +27,6 @@ sub make_db {
         print "your SQL account is at its database limit or its storage limit.\n";
         print "If you cannot determine the cause of the problem, please\n";
         print "feel free to contact sql\@mit.edu for assistance.\n";
-        open FAILED, ">.failed";
-        close FAILED;
         exit 1;
     }
     return $sqldb;
@@ -42,7 +40,19 @@ my $cwd = getcwd;
 system("rails", "new", $cwd ,"-d", "mysql");
 my $appdir = `basename $cwd`;
 chomp $appdir;
-my $appclass = ucfirst $appdir;
+
+open APPLICATION_RB, "config/application.rb";
+my $appclass;
+while(<APPLICATION_RB>) {
+    if (/module (\w+)\n/) {
+	$appclass = $1;
+	last;
+    }
+}
+close APPLICATION_RB;
+if (!$appclass) {
+    die "Couldn't find application class name - plase email scripts\@mit.edu with the names of your locker and the application you tried to create. Sorry!";
+}
 
 open PUBLIC_HTACCESS, ">public/.htaccess";
 print PUBLIC_HTACCESS <<EOF;
@@ -72,10 +82,10 @@ RewriteEngine On
 #   Alias /myrailsapp /path/to/myrailsapp/public
 #   RewriteBase /myrailsapp
 
+RewriteCond index.html -f
 RewriteRule ^\$ index.html [QSA]
-RewriteRule ^([^.]+)\$ \$1.html [QSA]
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*)\$ dispatch.fcgi [QSA,L]
+RewriteRule ^(.*)\$ dispatch.fcgi/\$1 [QSA,L]
 
 # In case Rails experiences terminal errors
 # Instead of displaying this message you can supply a file here which will be rendered instead
@@ -83,21 +93,19 @@ RewriteRule ^(.*)\$ dispatch.fcgi [QSA,L]
 # Example:
 #   ErrorDocument 500 /500.html
 
-RewriteBase /$addrend/public/
 EOF
 
 open HTACCESS, ">.htaccess";
 print HTACCESS <<EOF;
 RewriteEngine On
 RewriteRule ^(.*)\$ public/\$1 [QSA,L]
-RewriteBase /$addrend/
+
 EOF
 
 tie my @railsenv, 'Tie::File', 'config/environment.rb';
 unshift @railsenv, "# ENV['RAILS_ENV'] ||= 'production'";
 unshift @railsenv, "# Uncomment below to put Rails into production mode";
 unshift @railsenv, "";
-unshift @railsenv, "ENV['RAILS_RELATIVE_URL_ROOT'] = \"/$addrend\"";
 untie @railsenv;
 
 tie my @railsdb, 'Tie::File', 'config/database.yml';
@@ -118,6 +126,26 @@ for (@railswelcome) {
 }
 untie @railswelcome;
 
+# set config.action_controller.asset_host for all environments,
+# so urls to static assets are generated correctly
+# regardless of how the app is accessed
+my $rails_assethost = "  config.action_controller.asset_host = \"//$USER.scripts.mit.edu/$appdir/public\"";
+my @environments = ('development', 'production', 'test');
+
+for my $environment (@environments) {
+    tie my @envfile, 'Tie::File', "config/environments/$environment.rb";
+    my $i = 0;
+    for (@envfile) {
+	if (/^end$/) {
+	    last;
+	}
+	++$i;
+    }
+    splice @envfile, $i, 1, ($rails_assethost, 'end');
+    untie @envfile;
+}
+
+
 tie my @railsfcgi, 'Tie::File', 'public/dispatch.fcgi';
 for (@railsfcgi) {
     s/^[^#]*RailsFCGIHandler/## Commented out by scripts.mit.edu autoinstaller\n## RailsFCGIHandler/;
@@ -132,16 +160,17 @@ require 'rack'
 ## Added by scripts.mit.edu autoinstaller to reload when app code changes
 Thread.abort_on_exception = true
 
-class Rack::PathInfoRewriter
+# Strip public/dispatch.fcgi out of SCRIPT_NAME so Rails generates nicer URLs
+class ScriptNameRewriter
+  
   def initialize(app)
     \@app = app
   end
 
   def call(env)
-    env["SCRIPT_NAME"] = ""
-    parts = env['REQUEST_URI'].split('?')
-    env['PATH_INFO'] = parts[0]
-    env['QUERY_STRING'] = parts[1].to_s
+    if env['SCRIPT_NAME'] =~ /dispatch\.fcgi/
+      env['SCRIPT_NAME'].gsub!(/public\\/dispatch\.fcgi/,'')
+    end
     \@app.call(env)
   end
 end
@@ -151,7 +180,7 @@ t1 = Thread.new do
   dispatch_logger = Logger.new(File.join(Rails.root,'log/dispatcher.log'))
 
   begin
-    Rack::Handler::FastCGI.run Rack::PathInfoRewriter.new(Rack::URLMap.new("/$appdir" => ${appclass}::Application))
+    Rack::Handler::FastCGI.run ScriptNameRewriter.new(Rack::URLMap.new("/" => ${appclass}::Application))
   rescue => e
    dispatch_logger.error(e)
    raise e
@@ -164,7 +193,7 @@ t2 = Thread.new do
 
    # List of specific files to watch for changes.
    Thread.current[:watched_files] = ['public/dispatch.fcgi',
-				     'public/.htaccess']
+                                     'public/.htaccess']
    # Sample filter: /(\.rb|\.erb)\$/.  Default filter: watch all files
    Thread.current[:watched_extensions] = //
    # Iterations since last reload
@@ -193,7 +222,7 @@ t2 = Thread.new do
          return true if modified_dir(absfile)
        else
          return true if Thread.current[:watched_extensions] =~ absfile &&
-	   modified(absfile)
+           modified(absfile)
        end
      end
      false
@@ -225,14 +254,20 @@ t2.join
 EOF
 chmod 0755,'public/dispatch.fcgi';
 
+# static-cat doesn't whitelist .txt files
+chmod 0777, 'public/robots.txt'; 
+
 # have to explicitly take a dependency on fcgi
+# ruby1.9 means we need to take a dependency on minitest 
+# for rails console to work
 open GEMFILE, ">>Gemfile";
 print GEMFILE "gem 'fcgi'\n";
+print GEMFILE "gem 'minitest'\n";
 close GEMFILE;
 
 print "Your application is located in:\n";
 print "  /mit/$USER/web_scripts/$addrend/\n";
-print "To run programs like rake or script/generate, run\n";
+print "To run programs like rake or rails generate, run\n";
 print "  'ssh -k $USER\@scripts' and cd to the above directory.\n\n";
 press_enter;
 
