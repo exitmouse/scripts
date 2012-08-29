@@ -8,6 +8,7 @@ choices () {
     echo 'git Git repository'
     echo 'trac Trac'
     echo 'turbogears TurboGears'
+    echo 'django Django'
     echo 'rails Ruby on Rails'
 }
 
