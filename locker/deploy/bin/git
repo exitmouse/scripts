@@ -57,6 +57,7 @@ case "\$PATH_INFO" in
 esac
 export GIT_PROJECT_ROOT="$gitbase"
 export PATH_TRANSLATED="\$GIT_PROJECT_ROOT\$PATH_INFO"
+export GIT_HTTP_EXPORT_ALL=1
 exec git http-backend
 EOF
 close GIT_CGI;
@@ -66,10 +67,6 @@ symlink "_git.cgi","_git-auth.cgi";
 chdir $gitbase;
 system qw{git init --bare}, "$addrend.git";
 chdir "$addrend.git";
-
-open ENABLE, ">git-daemon-export-ok";
-print ENABLE "";
-close ENABLE;
 
 system qw{htpasswd -c}, $htpasswd, $admin_username;
 
