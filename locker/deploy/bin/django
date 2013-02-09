@@ -58,18 +58,16 @@ while (<SETTINGS>) {
   chomp;
   if (/Your Name/) {
     $_ = "    ('$USER', '$email'),";
-  } elsif (/^DEBUG = /) {
-      $_ =~ s/DEBUG/import os\n\nDEBUG/;
   } elsif (/'ENGINE'/) {
     $_ = "        'ENGINE': 'django.db.backends.mysql',";
   } elsif  (/'NAME'/) {
     $_ = "        'NAME': '$sqldb',";
   } elsif (/'USER'/) {
-    $_ = "        'OPTIONS': {\n            'read_default_file' : os.path.expanduser('~/.my.cnf'),\n        },";
+    $_ = "        'USER': '$sqluser',";
   } elsif (/'PASSWORD'/) {
-      next;
+    $_ = "        'PASSWORD': '$sqlpass',";
   } elsif (/'HOST'/) {
-      next;
+    $_ = "        'HOST': '$sqlhost',";
   } elsif (/Chicago/) {
     $_ =~ s/Chicago/New_York/;
   } elsif (/^ADMIN_MEDIA_PREFIX/) {
