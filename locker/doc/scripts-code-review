@@ -1,0 +1,25 @@
+Scripts has a policy of formal code review on Zephyr.  Commit messages
+are zephyred to -c scripts -i r[number], with the actual diff sent to
+-c scripts-auto -i commits.  Commits are also emailed to
+scripts-commits@mit.edu.  All commits should be reviewed by another
+scripts-team member before they are deployed.
+
+The following designations are in use, with the following meanings:
+"+1": I have reviewed and approve of this commit.
+
+"+0": I've glanced at the commit and it seems okay.
+
+"-0": I have mild issues with this commit, but am fine with it going
+      in as-is and no further action being taken.
+
+"-1": I do not approve of this commit, it needs more work. This
+      designation must include an explanation of the objection, and
+      will likely result in further action being taken either by the
+      committer or the reviewer to improve the commit.
+
+"-1, revert": I do not approve of this commit, and believe it to be
+      actively harmful to the project, such as introducing a security
+      hole.  This designation must include an explanation of the
+      objection.  The committer should revert the commit.
+
+Reviewers should strive to give non-zero reviews whenever possible.
